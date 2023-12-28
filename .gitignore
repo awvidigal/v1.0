@@ -1,0 +1,5 @@
+agv.venv
+agv.db
+agv.db-journal
+__pycache__
+agv_old.css
