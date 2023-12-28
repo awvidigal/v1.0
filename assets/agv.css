@@ -46,6 +46,10 @@ body{
     text-decoration: none;
 }
 
+.nav-col:hover{
+    background-color: #121212;
+}
+
 .menuItens{
     width:auto;
     margin: 0px;
