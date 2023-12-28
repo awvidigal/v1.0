@@ -55,6 +55,10 @@ body{
     margin: 0px;
 }
 
+.text-field-search{
+    border-radius: 30px;
+}
+
 .nav-menu-row {
     width: 100%;
 }
@@ -62,4 +66,13 @@ body{
 .nav-container{
     border-bottom: 1px solid whitesmoke;
     margin-top: 0;
+}
+
+.btn-client{
+    float: right;
+    background-color: #2f5bad;
+    border-radius: 30px;
+    width: 60px;
+    height: 60px;
+    padding: 0;
 }

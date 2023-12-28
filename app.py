@@ -8,13 +8,15 @@ from dash import Dash, dcc, html, Input, Output
 from navbar import createNavBar
 
 NAVBAR = createNavBar()
+FA621 = "https://use.fontawesome.com/releases/v6.2.1/css/all.css"
 
 app = Dash(
     __name__,
     use_pages=True,
     suppress_callback_exceptions=True,
     external_stylesheets=[
-        dbc.themes.LUX
+        dbc.themes.LUX,
+        FA621
     ]
 )
 
