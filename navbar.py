@@ -27,11 +27,11 @@ def createNavBar():
     # )
     menu = dbc.Row(
         [
-            dbc.Col(html.A('Home', href='pages\home.py', className='menuLink'), width='auto'),
-            dbc.Col(html.A('Clientes', href='pages\clientes.py', className='menuLink'), width='auto'),
-            # dbc.Col(dbc.NavLink('UCs', href='pages\unidades.py', class_name='menuLink'), width=True),
-            dbc.Col(html.A('Orçamentos', href='pages\orcamentos.py', className='menuLink'), width='auto'),
-            dbc.Col(html.A('Monitoramento', href='pages\monitormento.py', className='menuLink'), width='auto'),            
+            dbc.Col(html.A('Home', href='/', className='menuLink'), width='auto'),
+            dbc.Col(html.A('Clientes', href='/clientes', className='menuLink'), width='auto'),
+            dbc.Col(html.A('UCs', href='/unidades', className='menuLink'), width='auto'),
+            dbc.Col(html.A('Orçamentos', href='/orcamentos', className='menuLink'), width='auto'),
+            dbc.Col(html.A('Monitoramento', href='/monitoramento', className='menuLink'), width='auto'),            
         ],
         align='center',
         justify='end'
