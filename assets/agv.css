@@ -68,11 +68,23 @@ body{
     margin-top: 0;
 }
 
-.btn-client{
+#btn-add-client{
     float: right;
     background-color: #2f5bad;
     border-radius: 30px;
     width: 60px;
     height: 60px;
     padding: 0;
+}
+
+#btn-close{
+    background-color: #b02121;
+}
+
+#btn-insert{
+    background-color: #278a26;
+}
+
+.input-field-modal{
+    border-radius: 30px;
 }

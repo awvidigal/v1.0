@@ -76,11 +76,27 @@ app.layout = dcc.Loading(
                 NAVBAR,
                 dash.page_container
             ],
-        )
+        ), 
+        # dbc.Modal(
+        #     children=[
+        #         dbc.ModalHeader(dbc.ModalTitle('Novo Cliente')),
+        #         dbc.ModalBody('Formulario de cadastro do cliente'),
+        #         dbc.ModalFooter(dbc.Button(children='Inserir Cliente', id='btn-insert', n_clicks=0))
+        #     ],
+        #     id='new-client-modal',
+        #     is_open=False                
+        # )
     ],
     color='primary',
     fullscreen=True
 )
+
+# @app.callback(
+#     Output(component_id='new-client-modal', component_property='is_open'),
+#     Input(component_id='btn-add-cliente', component_property='n_clicks'),
+# )
+# def showModal(inputValue):
+#     return 'is_open'
 
 if __name__ == '__main__':
     app.run(debug=True)
