@@ -1,3 +1,4 @@
+import sqlite3 as sql
 import dash
 import dash_bootstrap_components as dbc
 from dash import html, dcc, callback, Input, Output, State
@@ -9,6 +10,9 @@ dash.register_page(
     path='/clientes'
 )
 
+estados=['AC', 'AL', 'AP', 'AM', 'BA', 'CE', 'DF', 'ES', 'GO', 'MA', 'MT', 'MS', 'MG', 'PA', 'PB', 'PR', 'PE', 'PI', 'RJ', 'RN', 'RS', 'RO', 'RR', 'SC', 'SP', 'SE', 'TO']
+
+# abre o modal de cadastro de cliente
 @callback(
     Output(component_id='new-client-modal', component_property='is_open'),
     [
@@ -23,6 +27,27 @@ def showModal(n1, n2, is_open):
     if n1 or n2:
         return not is_open
     return is_open
+
+# controle os placeholders dos campos de acordo com a escolha de PF ou PJ
+@callback(
+   [
+       Output(component_id='input-nome-razao-social', component_property='placeholder'),
+       Output(component_id='input-cpf-cnpj', component_property='placeholder')
+   ],
+
+   Input(component_id='radio-itens-pf-pj', component_property='value') 
+)
+def personType(radioValue):
+    nameOutput = 'Nome'
+    documentOutput = 'CPF'
+
+    if radioValue == 2:
+        nameOutput = 'Razão Social'
+        documentOutput = 'CNPJ'
+
+    return nameOutput, documentOutput
+
+# insere o novo registro no db
 
 def layout():
     layout = dbc.Container(
@@ -39,7 +64,10 @@ def layout():
                         html_size='100',
                         # list='lista com os nomes dos clientes no db'
                     ),
+                    justify='center',
+                    
             ),
+            
             # dbc.Row(
             #     children=['tabela do db com os clientes
             #     ]
@@ -62,8 +90,7 @@ def layout():
                     dbc.ModalHeader(dbc.ModalTitle('Novo Cliente')),
                     dbc.ModalBody(
                         children=[
-                           'Formulario de cadastro do cliente',
-                            html.Br(),
+                            html.H5('Formulário de cadastro do cliente', className='h5-modal-body-title'),
                             html.Br(),
                             # dbc.Label("PF/PJ"),
                             dbc.RadioItems(
@@ -71,7 +98,9 @@ def layout():
                                     {'label':'Pessoa Física', 'value':1},
                                     {'label':'Pessoa Jurídica', 'value':2},
                                 ],
-                                inline=True                                
+                                inline=True,
+                                id='radio-itens-pf-pj',
+                                value=1                              
                             ),
                             html.Br(),
                             # dbc.Label('Nome', id='lbl-nome', hidden=False),
@@ -88,7 +117,8 @@ def layout():
                                 class_name='input-field-modal',
                                 id='input-cpf-cnpj',
                                 placeholder='CPF',
-                                type='number'
+                                type='text',
+                                persistence=False
                             ),
 
                             html.Br(),
@@ -122,7 +152,7 @@ def layout():
                                             placeholder='Bairro',
                                             id='input-bairro'
                                         ),
-                                        width={'size':5, 'offset':0}
+                                        width={'size':4, 'offset':0}
                                     ),
                                     dbc.Col(
                                         dbc.Input(
@@ -134,12 +164,13 @@ def layout():
                                     ),
 
                                     dbc.Col(
-                                        dbc.Input(
+                                        dbc.Select(
                                             class_name='input-field-modal',
                                             placeholder='UF',
-                                            id='input-estado'
+                                            id='select-estado',
+                                            options=[{'label':estado, 'value':estado} for estado in estados]
                                         ),
-                                        width={'size':2, 'offset':0}
+                                        width={'size':3, 'offset':0}
                                     )
                                 ]
                                 
@@ -179,9 +210,50 @@ def layout():
                 id='new-client-modal',
                 is_open=False,
                 size='lg',
-                scrollable=True                
-            )        
-        ]
+                scrollable=True,
+                backdrop=False,               
+            ),
+
+            dbc.Modal(
+                children=[
+                    dbc.ModalHeader(
+                        children=[
+                            html.I(className='fa-solid fa-xmark'),
+                            'Cliente já cadastrado'
+                        ]
+                    ),
+                    dbc.ModalBody('O cliente que você está tentando cadastrar já existe'),
+                    dbc.ModalFooter(
+                        children=[
+                            dbc.Button(children='Fechar', id='btn-close-existent-client', n_clicks=0)
+                        ]
+                    )
+                ],
+                is_open=False,
+                id='modal-client-already-exists'
+            ),
+
+            dbc.Modal(
+                children=[
+                    dbc.ModalHeader(
+                        children=[
+                            html.I(className='fa-solid fa-check'),
+                            'Sucesso'
+                        ]
+                    ),
+                    dbc.ModalBody('Cliente cadastrado com sucesso'),
+                    dbc.ModalFooter(
+                        children=[
+                            dbc.Button(children='Fechar', id='btn-close-success', n_clicks=0)
+                        ]
+                    )
+                ],
+                is_open=False,
+                id='modal-client-success'
+            )
+                    
+        ],
+        fluid=True
     )
 
 
