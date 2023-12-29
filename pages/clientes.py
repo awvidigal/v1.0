@@ -145,7 +145,7 @@ def layout():
                                 
                             ),
                             html.Br(),
-                            
+
                             dbc.Row(
                                 children=[
                                     dbc.Col(
@@ -178,7 +178,8 @@ def layout():
                 ],
                 id='new-client-modal',
                 is_open=False,
-                size='lg'                
+                size='lg',
+                scrollable=True                
             )        
         ]
     )
