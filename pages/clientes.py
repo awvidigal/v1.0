@@ -1,8 +1,9 @@
 import sqlite3 as sql
+import pandas as pd
 import datetime
 import dash
 import dash_bootstrap_components as dbc
-from dash import html, dcc, callback, Input, Output, State
+from dash import html, callback, Input, Output, State
 
 
 dash.register_page(
@@ -261,7 +262,16 @@ def newRegister(btnInsert, btnCloseError, inputDocs, inputAddress, inputCity, se
                 # limpar os campos do modal principal?        
         return allOutputs
 
+# Cria dataframe com a tabela de clientes inteira
+conn = sql.connect('c:/Users/vidig/OneDrive/Python/agv/v1.0/agv.db')
+query = 'SELECT * FROM clientes;'
 
+clientsTable = pd.read_sql_query(
+    sql=query,
+    con=conn
+)
+
+conn.close()
 
 def layout():
     layout = dbc.Container(
