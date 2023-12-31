@@ -54,9 +54,10 @@ def personType(radioValue):
         Output(component_id='modal-client-error', component_property='is_open'),  
         Output(component_id='input-cpf-cnpj', component_property='class_name'),
         Output(component_id='input-endereco', component_property='class_name'),
+        Output(component_id='input-cidade', component_property='class_name'),
+        Output(component_id='select-estado', component_property='class_name')
         # Output(component_id='modal_client-success', component_property='is_open'),
-        # Output(component_id='input-cidade', component_property='style'),
-        # Output(component_id='select-estado', component_property='style')
+        
     ],
     [
         Input(component_id='btn-insert', component_property='n_clicks'),
@@ -66,27 +67,25 @@ def personType(radioValue):
     [
         State(component_id='input-cpf-cnpj', component_property='value'),
         State(component_id='input-endereco', component_property='value'),
-        # State(component_id='input-cidade', component_property='value'),
-        # State(component_id='select-estado', component_property='value'),
+        State(component_id='input-cidade', component_property='value'),
+        State(component_id='select-estado', component_property='value'),
         State(component_id='modal-client-error', component_property='is_open')        
     ],
     prevent_initial_call=True
 )
-def newRegister(btnInsert, btnCloseError, inputDocs, inputAddress, stateModal):
-    # outputModalChildrenErr = ''
-    # outputModalIsOpen = ''
-    # outputInputDocsClassName = ''
-    # outputInputAddressClassName = ''
-
+def newRegister(btnInsert, btnCloseError, inputDocs, inputAddress, inputCity, selectState, stateModal):
+    '''
+        As saídas estão organizadas em uma lista que é retornada ao final de cada execução. Estão numeradas da seguinte forma dentro dessa lista:
+            modal-client-error  | children   -> 0
+            modal-client-error  | os_open    -> 1
+            input-cpf-cnpj      | class_name -> 2
+            input-endereco      | class_name -> 3
+            input-cidade        | class_name -> 4
+            select-estado       | class_name -> 5
+    '''
+    
     emptyFieldIndicator = False
     
-    dictOutputs = {
-        'outputModalChildrenErr':0,
-        'outputModalIsOpen':1,
-        'OutputInputDocs':2,
-        'OutputInputAddress':3
-    }
-
     childrenErrClient = [
         dbc.ModalHeader(
             children=[
@@ -120,18 +119,14 @@ def newRegister(btnInsert, btnCloseError, inputDocs, inputAddress, stateModal):
     allOutputs = [
         childrenErrField,
         False,
-        'input-field-modal-error',
-        'input-field-modal-error'
+        'input-field-modal',
+        'input-field-modal',
+        'input-field-modal',
+        'input-field-modal'
     ]
 
     if btnInsert is not None and btnInsert > 0:
-        # for field in range(len(listFields)):
-        #     if not listFields[field]:
-        #         emptyFieldIndicator = True
-        #         classesOutputs[field] = 'input-field-modal-error'
-        #     else:
-        #         classesOutputs[field] = 'input-field-modal'
-        
+
         # VERIFICAR SE OS CAMPOS ESTAO PREENCHIDOS
         if not inputDocs:
             allOutputs[2] = 'input-field-modal-error'
@@ -147,11 +142,31 @@ def newRegister(btnInsert, btnCloseError, inputDocs, inputAddress, stateModal):
             allOutputs[3] = 'input-field-modal'
             emptyFieldIndicator = False
 
+        if not inputCity:
+            allOutputs[4] = 'input-field-modal-error'
+            emptyFieldIndicator = True
+        else:
+            allOutputs[4] = 'input-field-modal'
+            emptyFieldIndicator = False
+
+        if not selectState:
+            allOutputs[5] = 'input-field-modal-error'
+            emptyFieldIndicator = True
+        else:
+            allOutputs[5] = 'input-field-modal'
+            emptyFieldIndicator = False
+
+
         if emptyFieldIndicator:
             allOutputs[1] = not stateModal
         
         elif btnCloseError is not None and btnCloseError > 0:
             allOutputs[1] = not stateModal
+
+        else:
+            # cadastro no banco de dados
+            # modal de confirmação de cadastro
+            pass
         
         return allOutputs
 
