@@ -12,7 +12,7 @@ dash.register_page(
 
 estados=['AC', 'AL', 'AP', 'AM', 'BA', 'CE', 'DF', 'ES', 'GO', 'MA', 'MT', 'MS', 'MG', 'PA', 'PB', 'PR', 'PE', 'PI', 'RJ', 'RN', 'RS', 'RO', 'RR', 'SC', 'SP', 'SE', 'TO']
 
-# abre o modal de cadastro de cliente
+# abre o modal de cadastro de clientes
 @callback(
     Output(component_id='new-client-modal', component_property='is_open'),
     [
@@ -21,7 +21,7 @@ estados=['AC', 'AL', 'AP', 'AM', 'BA', 'CE', 'DF', 'ES', 'GO', 'MA', 'MT', 'MS',
     ],
     [
         State(component_id='new-client-modal', component_property='is_open')
-    ]
+    ],
 )
 def showModal(n1, n2, is_open):
     if n1 or n2:
@@ -48,6 +48,114 @@ def personType(radioValue):
     return nameOutput, documentOutput
 
 # insere o novo registro no db
+@callback(
+    [
+        Output(component_id='modal-client-error', component_property='children'),
+        Output(component_id='modal-client-error', component_property='is_open'),  
+        Output(component_id='input-cpf-cnpj', component_property='class_name'),
+        Output(component_id='input-endereco', component_property='class_name'),
+        # Output(component_id='modal_client-success', component_property='is_open'),
+        # Output(component_id='input-cidade', component_property='style'),
+        # Output(component_id='select-estado', component_property='style')
+    ],
+    [
+        Input(component_id='btn-insert', component_property='n_clicks'),
+        Input(component_id='btn-close-error', component_property='n_clicks'),         
+        # Input(component_id='btn-close-success', component_property='n_clicks'),    
+    ],
+    [
+        State(component_id='input-cpf-cnpj', component_property='value'),
+        State(component_id='input-endereco', component_property='value'),
+        # State(component_id='input-cidade', component_property='value'),
+        # State(component_id='select-estado', component_property='value'),
+        State(component_id='modal-client-error', component_property='is_open')        
+    ],
+    prevent_initial_call=True
+)
+def newRegister(btnInsert, btnCloseError, inputDocs, inputAddress, stateModal):
+    # outputModalChildrenErr = ''
+    # outputModalIsOpen = ''
+    # outputInputDocsClassName = ''
+    # outputInputAddressClassName = ''
+
+    emptyFieldIndicator = False
+    
+    dictOutputs = {
+        'outputModalChildrenErr':0,
+        'outputModalIsOpen':1,
+        'OutputInputDocs':2,
+        'OutputInputAddress':3
+    }
+
+    childrenErrClient = [
+        dbc.ModalHeader(
+            children=[
+                html.I(className='fa-solid fa-xmark'),
+                'Cliente já cadastrado'
+            ]
+        ),
+        dbc.ModalBody('O cliente que você está tentando cadastrar já existe'),
+        dbc.ModalFooter(
+            children=[
+                dbc.Button(children='Fechar', id='btn-close-error', n_clicks=0)
+            ]
+        )
+    ]
+
+    childrenErrField = [
+        dbc.ModalHeader(
+            children=[
+                html.I(className='fa-solid fa-xmark'),
+                'Campos obrigatórios'
+            ]
+        ),
+        dbc.ModalBody('Os campos marcados em vermelho são obrigatórios'),
+        dbc.ModalFooter(
+            children=[
+                dbc.Button(children='Fechar', id='btn-close-error', n_clicks=0)
+            ]
+        )
+    ]
+
+    allOutputs = [
+        childrenErrField,
+        False,
+        'input-field-modal-error',
+        'input-field-modal-error'
+    ]
+
+    if btnInsert is not None and btnInsert > 0:
+        # for field in range(len(listFields)):
+        #     if not listFields[field]:
+        #         emptyFieldIndicator = True
+        #         classesOutputs[field] = 'input-field-modal-error'
+        #     else:
+        #         classesOutputs[field] = 'input-field-modal'
+        
+        # VERIFICAR SE OS CAMPOS ESTAO PREENCHIDOS
+        if not inputDocs:
+            allOutputs[2] = 'input-field-modal-error'
+            emptyFieldIndicator = True
+        else: 
+            allOutputs[2] = 'input-field-modal'
+            emptyFieldIndicator = False
+
+        if not inputAddress:
+            allOutputs[3] = 'input-field-modal-error'
+            emptyFieldIndicator = True
+        else:
+            allOutputs[3] = 'input-field-modal'
+            emptyFieldIndicator = False
+
+        if emptyFieldIndicator:
+            allOutputs[1] = not stateModal
+        
+        elif btnCloseError is not None and btnCloseError > 0:
+            allOutputs[1] = not stateModal
+        
+        return allOutputs
+
+
 
 def layout():
     layout = dbc.Container(
@@ -100,7 +208,7 @@ def layout():
                                 ],
                                 inline=True,
                                 id='radio-itens-pf-pj',
-                                value=1                              
+                                value=1                            
                             ),
                             html.Br(),
                             # dbc.Label('Nome', id='lbl-nome', hidden=False),
@@ -118,7 +226,7 @@ def layout():
                                 id='input-cpf-cnpj',
                                 placeholder='CPF',
                                 type='text',
-                                persistence=False
+                                value='',
                             ),
 
                             html.Br(),
@@ -225,12 +333,13 @@ def layout():
                     dbc.ModalBody('O cliente que você está tentando cadastrar já existe'),
                     dbc.ModalFooter(
                         children=[
-                            dbc.Button(children='Fechar', id='btn-close-existent-client', n_clicks=0)
+                            dbc.Button(children='Fechar', id='btn-close-error', n_clicks=0)
                         ]
                     )
                 ],
                 is_open=False,
-                id='modal-client-already-exists'
+                id='modal-client-error',
+                centered=True
             ),
 
             dbc.Modal(
@@ -249,7 +358,8 @@ def layout():
                     )
                 ],
                 is_open=False,
-                id='modal-client-success'
+                id='modal-client-success',
+                centered=True
             )
                     
         ],

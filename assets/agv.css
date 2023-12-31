@@ -63,6 +63,8 @@ body{
 
 .input-field-modal{
     border-radius: 30px;
+    border-width: 1px;
+    border-style: dashed;
 }
 
 .navbar{
@@ -81,4 +83,11 @@ body{
 .fa-solid.fa-xmark{
     margin-right: 10px;
     color: #b02121;
+}
+
+.input-field-modal-error{
+    border-radius: 30px;
+    border-width: 1px;
+    border-style: dashed;
+    border-color:red;
 }
