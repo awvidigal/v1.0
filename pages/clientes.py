@@ -1,4 +1,5 @@
 import sqlite3 as sql
+import datetime
 import dash
 import dash_bootstrap_components as dbc
 from dash import html, dcc, callback, Input, Output, State
@@ -69,11 +70,16 @@ def personType(radioValue):
         State(component_id='input-endereco', component_property='value'),
         State(component_id='input-cidade', component_property='value'),
         State(component_id='select-estado', component_property='value'),
-        State(component_id='modal-client-error', component_property='is_open')        
+        State(component_id='modal-client-error', component_property='is_open'),
+        State(component_id='radio-itens-pf-pj', component_property='value'),
+        State(component_id='input-nome-razao-social', component_property='value'),
+        State(component_id='input-numero', component_property='value'),
+        State(component_id='input-email', component_property='value'),
+        State(component_id='input-telefone', component_property='value')        
     ],
     prevent_initial_call=True
 )
-def newRegister(btnInsert, btnCloseError, inputDocs, inputAddress, inputCity, selectState, stateModal):
+def newRegister(btnInsert, btnCloseError, inputDocs, inputAddress, inputCity, selectState, stateModal, stateRadio, inputName, inputNumber, inputEmail, inputPhone):
     '''
         As saídas estão organizadas em uma lista que é retornada ao final de cada execução. Estão numeradas da seguinte forma dentro dessa lista:
             modal-client-error  | children   -> 0
@@ -84,6 +90,19 @@ def newRegister(btnInsert, btnCloseError, inputDocs, inputAddress, inputCity, se
             select-estado       | class_name -> 5
     '''
     
+    print("começoooouuu")
+    existsIndicator = ''
+    created_at = datetime.datetime.now()
+    document = 'cpf'
+    name = 'nome'
+    person = 'pf'
+    completeAddress = inputAddress + ', ' + inputNumber
+
+    if stateRadio == 2:
+        document = 'cnpj'
+        name = 'razao_social'
+        person = 'pj'
+
     emptyFieldIndicator = False
     
     childrenErrClient = [
@@ -125,6 +144,8 @@ def newRegister(btnInsert, btnCloseError, inputDocs, inputAddress, inputCity, se
         'input-field-modal'
     ]
 
+    # inserir validação do campo de cpf/cnpj
+
     if btnInsert is not None and btnInsert > 0:
 
         # VERIFICAR SE OS CAMPOS ESTAO PREENCHIDOS
@@ -165,8 +186,59 @@ def newRegister(btnInsert, btnCloseError, inputDocs, inputAddress, inputCity, se
 
         else:
             # cadastro no banco de dados
+            conn = sql.connect('agv.db')
+            cursor = conn.cursor()
+
+            # verificar se o cpf/cnpj ja existem
+            existsIndicator = cursor.execute(
+                f'''
+                SELECT *
+                FROM clientes
+                WHERE {document} = ?;
+                ''', (inputDocs,)
+            ).fetchone()
+
+            if existsIndicator == None:
+                # se nao existir, cadastro do cliente no db
+                if person == 'pf':                    
+                    try:
+                        cursor.execute(
+                            '''
+                            INSERT INTO clientes (pessoa, cpf, nome, endereco, cidade, estado, email, telefone, created_at)
+                            VALUES (?,?,?,?,?,?,?,?,?)
+                            ''', (person, inputDocs, inputName, completeAddress, inputCity, selectState, inputEmail, inputPhone, created_at)
+                        )
+                        conn.commit()
+                    except Exception as e:
+                        print(f'Erro ao executar INSERT: {e}')
+                        print(f"Consulta SQL:", {'''
+                            INSERT INTO clientes (pessoa, cpf, nome, endereco, cidade, estado, email, telefone, created_at)
+                            VALUES (?,?,?,?,?,?,?,?,?)
+                        '''})
+
+                elif person == 'pj':
+                    try:
+                        cursor.execute(
+                            '''
+                            INSERT INTO clientes (pessoa, cnpj, razao_social, endereco, cidade, estado, email, telefone, created_at)
+                            VALUES (?,?,?,?,?,?,?,?,?)
+                            ''', (person, inputDocs, inputName, completeAddress, inputCity, selectState, inputEmail, inputPhone, created_at)
+                        )
+                        conn.commit()
+                    except Exception as e:
+                        print(f'Erro ao executar INSERT: {e}')
+                        print(f"Consulta SQL:", {'''
+                            INSERT INTO clientes (pessoa, cpf, nome, endereco, cidade, estado, email, telefone, created_at)
+                            VALUES (?,?,?,?,?,?,?,?,?)
+                        '''})
+
+                conn.close()
+            else:
+                print('#deuruim')
+                pass
+               
             # modal de confirmação de cadastro
-            pass
+                
         
         return allOutputs
 
