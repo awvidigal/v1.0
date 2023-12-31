@@ -62,7 +62,7 @@ def personType(radioValue):
     ],
     [
         Input(component_id='btn-insert', component_property='n_clicks'),
-        Input(component_id='btn-close-error', component_property='n_clicks'),         
+        Input(component_id='btn-close', component_property='n_clicks'),         
         # Input(component_id='btn-close-success', component_property='n_clicks'),    
     ],
     [
@@ -94,13 +94,11 @@ def newRegister(btnInsert, btnCloseError, inputDocs, inputAddress, inputCity, se
     existsIndicator = ''
     created_at = datetime.datetime.now()
     document = 'cpf'
-    name = 'nome'
     person = 'pf'
     completeAddress = inputAddress + ', ' + inputNumber
 
     if stateRadio == 2:
         document = 'cnpj'
-        name = 'razao_social'
         person = 'pj'
 
     emptyFieldIndicator = False
@@ -115,7 +113,7 @@ def newRegister(btnInsert, btnCloseError, inputDocs, inputAddress, inputCity, se
         dbc.ModalBody('O cliente que você está tentando cadastrar já existe'),
         dbc.ModalFooter(
             children=[
-                dbc.Button(children='Fechar', id='btn-close-error', n_clicks=0)
+                dbc.Button(children='Fechar', id='btn-close', n_clicks=0)
             ]
         )
     ]
@@ -130,7 +128,22 @@ def newRegister(btnInsert, btnCloseError, inputDocs, inputAddress, inputCity, se
         dbc.ModalBody('Os campos marcados em vermelho são obrigatórios'),
         dbc.ModalFooter(
             children=[
-                dbc.Button(children='Fechar', id='btn-close-error', n_clicks=0)
+                dbc.Button(children='Fechar', id='btn-close', n_clicks=0)
+            ]
+        )
+    ]
+
+    childrenSuccess = [
+        dbc.ModalHeader(
+            children=[
+                html.I(className='fa-solid fa-check'),
+                            'Sucesso'
+                    ]
+                ),
+        dbc.ModalBody('Cliente cadastrado com sucesso'),
+        dbc.ModalFooter(
+            children=[
+                dbc.Button(children='Fechar', id='btn-close', n_clicks=0)
             ]
         )
     ]
@@ -209,6 +222,10 @@ def newRegister(btnInsert, btnCloseError, inputDocs, inputAddress, inputCity, se
                             ''', (person, inputDocs, inputName, completeAddress, inputCity, selectState, inputEmail, inputPhone, created_at)
                         )
                         conn.commit()
+
+                        allOutputs[0] = childrenSuccess
+                        allOutputs[1] = not stateModal
+
                     except Exception as e:
                         print(f'Erro ao executar INSERT: {e}')
                         print(f"Consulta SQL:", {'''
@@ -225,6 +242,9 @@ def newRegister(btnInsert, btnCloseError, inputDocs, inputAddress, inputCity, se
                             ''', (person, inputDocs, inputName, completeAddress, inputCity, selectState, inputEmail, inputPhone, created_at)
                         )
                         conn.commit()
+
+                        
+
                     except Exception as e:
                         print(f'Erro ao executar INSERT: {e}')
                         print(f"Consulta SQL:", {'''
@@ -233,13 +253,12 @@ def newRegister(btnInsert, btnCloseError, inputDocs, inputAddress, inputCity, se
                         '''})
 
                 conn.close()
+            
             else:
                 print('#deuruim')
-                pass
-               
-            # modal de confirmação de cadastro
-                
-        
+                allOutputs[0] = childrenErrClient
+                allOutputs[1] = not stateModal
+                # limpar os campos do modal principal?        
         return allOutputs
 
 
