@@ -1,5 +1,6 @@
 import sqlite3 as sql
 import pandas as pd
+import numpy as np
 import datetime
 import dash
 import dash_bootstrap_components as dbc
@@ -16,7 +17,10 @@ estados=['AC', 'AL', 'AP', 'AM', 'BA', 'CE', 'DF', 'ES', 'GO', 'MA', 'MT', 'MS',
 
 # abre o modal de cadastro de clientes
 @callback(
-    Output(component_id='new-client-modal', component_property='is_open'),
+    [
+        Output(component_id='new-client-modal', component_property='is_open'),
+        # inserir os valores dos inputs como outputs de forma a limpar os campos quando o modal for aberto ou fechado
+    ],
     [
         Input(component_id='btn-add-client', component_property='n_clicks'),
         Input(component_id='btn-close', component_property='n_clicks')
@@ -24,6 +28,7 @@ estados=['AC', 'AL', 'AP', 'AM', 'BA', 'CE', 'DF', 'ES', 'GO', 'MA', 'MT', 'MS',
     [
         State(component_id='new-client-modal', component_property='is_open')
     ],
+    prevent_initial_call=True
 )
 def showModal(n1, n2, is_open):
     if n1 or n2:
@@ -37,7 +42,8 @@ def showModal(n1, n2, is_open):
        Output(component_id='input-cpf-cnpj', component_property='placeholder')
    ],
 
-   Input(component_id='radio-itens-pf-pj', component_property='value') 
+   Input(component_id='radio-itens-pf-pj', component_property='value'),
+   prevent_initial_call=True 
 )
 def personType(radioValue):
     nameOutput = 'Nome'
@@ -262,9 +268,20 @@ def newRegister(btnInsert, btnCloseError, inputDocs, inputAddress, inputCity, se
                 # limpar os campos do modal principal?        
         return allOutputs
 
+
 # Cria dataframe com a tabela de clientes inteira
 conn = sql.connect('c:/Users/vidig/OneDrive/Python/agv/v1.0/agv.db')
-query = 'SELECT * FROM clientes;'
+query = '''SELECT 
+            IFNULL(pessoa, 'NaN') as pessoa,
+            IFNULL(cpf, 'NaN') as cpf,
+            IFNULL(cnpj, 'NaN') as cnpj,
+            IFNULL(nome, 'NaN') as nome,
+            IFNULL(razao_social, 'NaN') as razao_social,
+            IFNULL(cidade, 'NaN') as cidade,
+            IFNULL(estado, 'NaN') as estado,
+            IFNULL(telefone, 'NaN') as telefone,
+            IFNULL(email, 'NaN') as email
+        FROM clientes;'''
 
 clientsTable = pd.read_sql_query(
     sql=query,
@@ -272,6 +289,18 @@ clientsTable = pd.read_sql_query(
 )
 
 conn.close()
+
+docsColumns = ['cpf', 'cnpj']
+namesColumns = ['nome', 'razao_social']
+
+clientsTable[docsColumns] = clientsTable[docsColumns].astype('string')
+clientsTable[namesColumns] = clientsTable[namesColumns].astype('string')
+
+showTable = pd.DataFrame(columns=['Nome/Razão Social', 'CPF/CNPJ', 'Telefone', 'Email'])
+showTable['Nome/Razão Social'] = clientsTable[namesColumns].sum(1)
+showTable['CPF/CNPJ'] = clientsTable[docsColumns].sum(1)
+showTable['Telefone'] = clientsTable['telefone']
+showTable['Email'] = clientsTable['email']
 
 def layout():
     layout = dbc.Container(
