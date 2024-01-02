@@ -91,3 +91,17 @@ body{
     border-style: dashed;
     border-color:red;
 }
+
+.table-clients{
+    margin-top: 40px;
+    width: 90%;
+    margin-left: 5%;
+}
+
+.table-clients th{
+    background-color: #b02121;
+}
+
+.div-table{
+    justify-content: center;
+}

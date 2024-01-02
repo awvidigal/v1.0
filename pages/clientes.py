@@ -290,6 +290,8 @@ clientsTable = pd.read_sql_query(
 
 conn.close()
 
+clientsTable.replace('NaN', np.nan, inplace=True)
+
 docsColumns = ['cpf', 'cnpj']
 namesColumns = ['nome', 'razao_social']
 
@@ -324,7 +326,22 @@ def layout():
             # dbc.Row(
             #     children=['tabela do db com os clientes
             #     ]
-            # ),
+            # )
+            
+            html.Div(
+                children = dbc.Table.from_dataframe(
+                    showTable, 
+                    striped=False,
+                    bordered=False,
+                    hover=True,
+                    class_name='table-clients',
+                    color='dark',
+                    size='lg'
+                ),
+                className='div-table'
+            ),
+
+
 
             # dbc.Row(
             #     children=[
