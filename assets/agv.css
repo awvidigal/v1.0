@@ -18,7 +18,7 @@ body{
 }
 
 .nav-col:hover{
-    background-color: #121212;
+    background-color: #212121;
 }
 
 .menuItens{
@@ -92,14 +92,15 @@ body{
     border-color:red;
 }
 
-.table-clients{
+#table-clients{
     margin-top: 40px;
     width: 90%;
     margin-left: 5%;
 }
 
-.table-clients th{
-    background-color: #b02121;
+#table-clients th{
+    background-color: #2f5bad;
+    color: #ffffff;
 }
 
 .div-table{

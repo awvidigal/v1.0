@@ -32,8 +32,8 @@ estados=['AC', 'AL', 'AP', 'AM', 'BA', 'CE', 'DF', 'ES', 'GO', 'MA', 'MT', 'MS',
 )
 def showModal(n1, n2, is_open):
     if n1 or n2:
-        return not is_open
-    return is_open
+        return [not is_open]
+    return [is_open]
 
 # controle os placeholders dos campos de acordo com a escolha de PF ou PJ
 @callback(
@@ -69,7 +69,7 @@ def personType(radioValue):
     ],
     [
         Input(component_id='btn-insert', component_property='n_clicks'),
-        Input(component_id='btn-close', component_property='n_clicks'),         
+        Input(component_id='btn-close-error', component_property='n_clicks'),         
         # Input(component_id='btn-close-success', component_property='n_clicks'),    
     ],
     [
@@ -96,8 +96,6 @@ def newRegister(btnInsert, btnCloseError, inputDocs, inputAddress, inputCity, se
             input-cidade        | class_name -> 4
             select-estado       | class_name -> 5
     '''
-    
-    print("começoooouuu")
     existsIndicator = ''
     created_at = datetime.datetime.now()
     document = 'cpf'
@@ -334,8 +332,8 @@ def layout():
                     striped=False,
                     bordered=False,
                     hover=True,
-                    class_name='table-clients',
-                    color='dark',
+                    id='table-clients',
+                    color='secondary',
                     size='lg'
                 ),
                 className='div-table'
