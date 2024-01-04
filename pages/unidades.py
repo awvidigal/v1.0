@@ -36,8 +36,13 @@ conn.close()
 
 utilities = [item[0] for item in utilities]
 
-clients = pd.DataFrame(clients)
-# tornar clients uma lista de nomes e razoes sociais
+clientsColumns = ['Nome', 'Razão Social']
+clients = pd.DataFrame(data=clients, columns=clientsColumns)
+clients.replace('NaN', np.nan, inplace=True)  
+clients['Nome'] = clients['Nome'].astype('string')  
+clients['Razão Social'] = clients['Razão Social'].astype('string')
+clients = pd.Series(clients[clientsColumns].sum(1))
+clients = [item for item in clients]
 
 def layout():
     layout = dbc.Container(
@@ -70,18 +75,52 @@ def layout():
                     dbc.ModalHeader(dbc.ModalTitle('Nova UC')),
                     dbc.ModalBody(
                         children=[
-                            dbc.Select(
-                                class_name='input-field-modal',
-                                id='select-cliente',
-                                placeholder='Cliente',
-                                # options deve apontar para 'clients'
-                                # options=[{'label':estado, 'value':estado} for estado in estados]
+                            dbc.Row(
+                                children=[
+                                    dbc.Col(
+                                        children=[
+                                            dbc.Select(
+                                                class_name='input-field-modal',
+                                                id='select-cliente',
+                                                placeholder='Cliente',
+                                                options=[{'label':client, 'value':client} for client in clients]
+                                            ),
+                                        ]
+                                    ), 
+
+                                    dbc.Col(
+                                        children=[
+                                            dbc.Select(
+                                                class_name='input-field-modal',
+                                                id='select-concessionaria',
+                                                placeholder='Concessionária',
+                                                options=[{'label':utility, 'value':utility} for utility in utilities]
+                                            )
+                                        ]
+                                    ),
+
+                                    dbc.Col(
+                                        children=[
+                                            dbc.Input(
+                                                class_name='input-field-modal',
+                                                id='input-uc',
+                                                placeholder='Número da UC'
+                                            )
+
+                                        ]
+                                    ),
+                                    
+
+                                     
+                                ]
                             )
+                            
                         ],
                         
                     )
                 ],
-                is_open=True
+                is_open=True,
+                id='modal-cadastro-ucs'
             )
         ]
     )

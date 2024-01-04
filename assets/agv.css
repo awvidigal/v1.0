@@ -26,6 +26,10 @@ body{
     margin: 0px;
 }
 
+/* #modal-cadastro-ucs{
+    width:auto;
+} */
+
 .text-field-search{
     border-radius: 30px;
     height: 40px;
