@@ -61,6 +61,26 @@ clients['Razão Social'] = clients['Razão Social'].astype('string')
 clients = pd.Series(clients[clientsColumns].sum(1))
 clients = [item for item in clients]
 
+# abre o modal de cadastro de uc
+@callback(
+    [
+        Output(component_id='modal-cadastro-ucs', component_property='is_open'),
+        # inserir os valores dos inputs como outputs de forma a limpar os campos quando o modal for aberto ou fechado
+    ],
+    [
+        Input(component_id='btn-add-client', component_property='n_clicks'),
+        Input(component_id='btn-close', component_property='n_clicks')
+    ],
+    [
+        State(component_id='modal-cadastro-ucs', component_property='is_open')
+    ],
+    prevent_initial_call=True
+)
+def showModal(n1, n2, is_open):
+    if n1 or n2:
+        return [not is_open]
+    return [is_open]
+
 def layout():
     layout = dbc.Container(
         # html.H1('pagina de UCs')
@@ -186,13 +206,20 @@ def layout():
                                         )
                                     )
                                 ]
+                            ),
+                            
+                            dbc.ModalFooter(
+                                children=[
+                                    dbc.Button(children='Fechar', id='btn-close', n_clicks=0),
+                                    dbc.Button(children='Inserir', id='btn-insert', n_clicks=0)
+                                ]
                             )
                             
                         ],
                         
                     )
                 ],
-                is_open=True,
+                is_open=False,
                 id='modal-cadastro-ucs',
                 size='lg'
             )
