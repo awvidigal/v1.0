@@ -81,6 +81,40 @@ def showModal(n1, n2, is_open):
         return [not is_open]
     return [is_open]
 
+# altera os status dos inputs de demanda
+@callback(
+    [
+        Output(component_id='input-demanda', component_property='disabled'),
+        Output(component_id='input-demanda-fponta', component_property='disabled'),
+    ],
+    [
+        Input(component_id='select-subgrupo', component_property='value'),
+        Input(component_id='select-modalidade', component_property='value')
+    ],
+    prevent_initial_call=True
+)
+def disabledInputs(selectSubgrupo, selectModalidade):
+    baixaTensão=[
+        'B1',
+        'B2',
+        'B3'
+    ]
+
+    allOutputs = [True, True]
+
+    for grupo in baixaTensão:
+        if selectSubgrupo == grupo:
+            for pos in allOutputs:
+                allOutputs[pos] = True
+            break
+        else:
+            allOutputs[0] = False
+
+    if selectModalidade == 'Azul':
+        allOutputs[1] = False
+    
+    return allOutputs
+
 def layout():
     layout = dbc.Container(
         # html.H1('pagina de UCs')
@@ -151,7 +185,6 @@ def layout():
                                                 id='input-uc',
                                                 placeholder='Número da UC'
                                             )
-
                                         ],
                                         width={'size':5, 'offset':0}
                                     ),
@@ -202,21 +235,20 @@ def layout():
                                             placeholder='Demanda contratada fora ponta(kW)',
                                             type='number',
                                             # disabled deve ser alterado no callback
-                                            disabled=True
+                                            disabled=False
                                         )
                                     )
                                 ]
                             ),
+                            html.Br(),
                             
                             dbc.ModalFooter(
                                 children=[
                                     dbc.Button(children='Fechar', id='btn-close', n_clicks=0),
                                     dbc.Button(children='Inserir', id='btn-insert', n_clicks=0)
                                 ]
-                            )
-                            
+                            )    
                         ],
-                        
                     )
                 ],
                 is_open=False,
