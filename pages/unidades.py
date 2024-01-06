@@ -115,6 +115,45 @@ def disabledInputs(selectSubgrupo, selectModalidade):
     
     return allOutputs
 
+@callback(
+    [
+        Output(component_id='modal-aviso', component_property='is_open'),
+        Output(component_id='modal-aviso', component_property='children'),
+        Output(component_id='select-client', component_property='class_name'),
+        Output(component_id='select-concessionaria', component_property='class_name'),
+        Output(component_id='input-uc', component_property='class_name'),
+        Output(component_id='select-grupo', component_property='class_name'),
+        Output(component_id='select-modalidade', component_property='class_name'),
+        Output(component_id='input-demanda', component_property='class_name'),
+        Output(component_id='input-demanda-fponta', component_property='class_name'),
+    ],
+    [
+        Input(component_id='btn-insert', component_property='n_clicks'),
+    ],
+    [
+        State(component_id='select-client', component_property='value'),
+        State(component_id='select-concessionaria', component_property='value'),
+        State(component_id='input-uc', component_property='value'),
+        State(component_id='select-grupo', component_property='value'),
+        State(component_id='select-modalidade', component_property='value'),
+        State(component_id='input-demanda', component_property='value'),
+        State(component_id='input-demanda-fponta', component_property='value'),
+    ]
+)
+def cadastrarUc(inputClient, stateUtilies, stateUC, stateGroup, stateModality, stateDemand, statefpDemand):
+    modalChildren = [
+        dbc.ModalHeader(
+            children={
+                html.I(className='fa-solid fa-xmark'),
+                'Erro'
+            },
+        ),
+        dbc.ModalBody(
+            children='UC já cadastrada'
+        ),
+        dbc.ModalFooter(dbc.Button(children='Fechar', id='btn-close-warning', n_clicks=0)),
+    ]
+
 def layout():
     layout = dbc.Container(
         # html.H1('pagina de UCs')
@@ -254,7 +293,30 @@ def layout():
                 is_open=False,
                 id='modal-cadastro-ucs',
                 size='lg'
+            ),
+
+            dbc.Modal(
+                children=[
+                    dbc.ModalHeader(
+                        children=[
+                            html.I(className='fa-solid fa-check'),
+                            'Sucesso'
+                        ]
+                    ),
+
+                    dbc.ModalBody('UC cadastrada com sucesso!'),
+
+                    dbc.ModalFooter(
+                        dbc.Button(children='Fechar', id='btn-close-warning', n_clicks=0),
+                    )
+                    
+                ],
+                is_open=True,
+                id='modal-aviso',
+                size='md',
+                centered=True
             )
+
         ]
     )
 
