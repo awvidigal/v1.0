@@ -85,7 +85,8 @@ def showModal(n1, n2, is_open):
 @callback(
     [
         Output(component_id='input-demanda', component_property='disabled'),
-        Output(component_id='input-demanda-fponta', component_property='disabled'),
+        Output(component_id='input-demanda-ponta', component_property='disabled'),
+        Output(component_id='input-demanda', component_property='placeholder')
     ],
     [
         Input(component_id='select-subgrupo', component_property='value'),
@@ -100,11 +101,15 @@ def disabledInputs(selectSubgrupo, selectModalidade):
         'B3'
     ]
 
-    allOutputs = [True, True]
+    allOutputs = [
+        True,
+        True,
+        'Demanda Contratada (kW)'
+    ]
 
     for grupo in baixaTensão:
         if selectSubgrupo == grupo:
-            for pos in allOutputs:
+            for pos in range(len(baixaTensão)-1):
                 allOutputs[pos] = True
             break
         else:
@@ -112,47 +117,190 @@ def disabledInputs(selectSubgrupo, selectModalidade):
 
     if selectModalidade == 'Azul':
         allOutputs[1] = False
+        allOutputs[2] = 'Demanda Fora Ponta (kW)'
     
     return allOutputs
 
 @callback(
     [
-        Output(component_id='modal-aviso', component_property='is_open'),
-        Output(component_id='modal-aviso', component_property='children'),
-        Output(component_id='select-client', component_property='class_name'),
-        Output(component_id='select-concessionaria', component_property='class_name'),
-        Output(component_id='input-uc', component_property='class_name'),
-        Output(component_id='select-grupo', component_property='class_name'),
-        Output(component_id='select-modalidade', component_property='class_name'),
-        Output(component_id='input-demanda', component_property='class_name'),
-        Output(component_id='input-demanda-fponta', component_property='class_name'),
+        Output(component_id='modal-aviso',              component_property='is_open'),
+        Output(component_id='modal-err-field',          component_property='is_open'),
+        Output(component_id='modal-err-uc',             component_property='is_open'),
+        Output(component_id='select-cliente',           component_property='class_name'),
+        Output(component_id='select-concessionaria',    component_property='class_name'),
+        Output(component_id='input-uc',                 component_property='class_name'),
+        Output(component_id='select-subgrupo',          component_property='class_name'),
+        Output(component_id='select-modalidade',        component_property='class_name'),
+        Output(component_id='input-demanda',            component_property='class_name'),
+        Output(component_id='input-demanda-ponta',      component_property='class_name'),
     ],
     [
-        Input(component_id='btn-insert', component_property='n_clicks'),
+        Input(component_id='btn-insert',            component_property='n_clicks'),
+        Input(component_id='btn-close-aviso',       component_property='n_clicks'),
+        Input(component_id='btn-close-err-field',   component_property='n_clicks'),
+        Input(component_id='btn-close-err-uc',      component_property='n_clicks'),
     ],
     [
-        State(component_id='select-client', component_property='value'),
+        State(component_id='modal-aviso',           component_property='is_open'),
+        State(component_id='modal-err-field',       component_property='is_open'),
+        State(component_id='modal-err-uc',          component_property='is_open'),
+        State(component_id='select-cliente',        component_property='value'),
         State(component_id='select-concessionaria', component_property='value'),
-        State(component_id='input-uc', component_property='value'),
-        State(component_id='select-grupo', component_property='value'),
-        State(component_id='select-modalidade', component_property='value'),
-        State(component_id='input-demanda', component_property='value'),
-        State(component_id='input-demanda-fponta', component_property='value'),
-    ]
+        State(component_id='input-uc',              component_property='value'),
+        State(component_id='select-subgrupo',       component_property='value'),
+        State(component_id='select-modalidade',     component_property='value'),
+        State(component_id='input-demanda',         component_property='value'),
+        State(component_id='input-demanda-ponta',   component_property='value'),
+        State(component_id='input-demanda',         component_property='disabled'),
+        State(component_id='input-demanda-ponta',   component_property='disabled')
+    ],
+    prevent_initial_call=True
 )
-def cadastrarUc(inputClient, stateUtilies, stateUC, stateGroup, stateModality, stateDemand, statefpDemand):
-    modalChildren = [
-        dbc.ModalHeader(
-            children={
-                html.I(className='fa-solid fa-xmark'),
-                'Erro'
-            },
-        ),
-        dbc.ModalBody(
-            children='UC já cadastrada'
-        ),
-        dbc.ModalFooter(dbc.Button(children='Fechar', id='btn-close-warning', n_clicks=0)),
+def cadastrarUc(btnInsertUc, btnCloseAviso, btnCloseErrField, btnCloseErrUC, stateModalAviso, stateModalErrField, stateModalErrUC, stateClient, stateUtilities, stateUC, stateGroup, stateModality, stateDemand, statepDemand, stateDemandDisabled, statepDemandDisabled):
+    '''
+        As saídas estão organizadas em uma lista que é retornada ao final de cada execução. Estão numeradas da seguinte forma dentro dessa lista:
+            modal-aviso             | is_open       -> 0
+            modal-err-field         | is_open       -> 1
+            modal-err-uc            | is_open       -> 2
+            select-cliente          | class_name    -> 3
+            select-concessionaria   | class_name    -> 4
+            input-uc                | class_name    -> 5
+            select-grupo            | class_name    -> 6
+            select-modalidade       | class_name    -> 7
+            input-demanda           | class_name    -> 8
+            input-demanda-ponta     | class_name    -> 9
+    '''
+
+    allOutputs = [
+        False,                  # 0 - modal-aviso             | is_open
+        False,                  # 1 - modal-err-field         | is_open
+        False,                  # 2 - modal-err-uc            | is_open
+        'input-field-modal',    # 3 - select-cliente          | class_name
+        'input-field-modal',    # 4 - select-concessionaria   | class_name
+        'input-field-modal',    # 5 - input-uc                | class_name
+        'input-field-modal',    # 6 - select-grupo            | class_name
+        'input-field-modal',    # 7 - select-modalidade       | class_name
+        'input-field-modal',    # 8 - input-demanda           | class_name
+        'input-field-modal'     # 9 - input-demanda-fponta    | class_name
     ]
+
+    emptyFieldIndicator = False
+    existsUC = None
+    today = datetime.datetime.now()
+    demand = None
+    pDemand = None
+    fpDemand = None
+
+    if btnInsertUc is not None and btnInsertUc > 0:
+
+        if not stateClient:
+            allOutputs[3] = 'input-field-modal-error'
+            emptyFieldIndicator = True
+        else:
+            allOutputs[3] = 'input-field-modal'
+        
+        if not stateUtilities:
+            allOutputs[4] = 'input-field-modal-error'
+            emptyFieldIndicator = True
+        else:
+            allOutputs[4] = 'input-field-modal'
+
+        if not stateUC:
+            allOutputs[5] = 'input-field-modal-error'
+            emptyFieldIndicator = True
+        else:
+            allOutputs[5] = 'input-field-modal'
+
+        if not stateGroup:
+            emptyFieldIndicator = True
+            allOutputs[6] = 'input-field-modal-error'
+        else:
+            allOutputs[6] = 'input-field-modal'
+
+        if not stateModality:
+            emptyFieldIndicator = True
+            allOutputs[7] = 'input-field-modal-error'
+        else:
+            allOutputs[7] = 'input-field-modal'
+
+        if not stateDemand and not stateDemandDisabled:
+            emptyFieldIndicator = True
+            allOutputs[8] = 'input-field-modal-error'
+        else:
+            allOutputs[8] = 'input-field-modal'
+
+        if not statepDemand and not statepDemandDisabled:
+            emptyFieldIndicator = True
+            allOutputs[9] = 'input-field-modal-error'
+        else:
+            allOutputs[9] = 'input-field-modal'
+        
+        if emptyFieldIndicator:
+            allOutputs[1] = not stateModalErrField
+        elif btnCloseAviso is not None and btnCloseAviso > 0:
+            allOutputs[0] = not stateModalAviso
+        elif btnCloseErrField is not None and btnCloseErrField > 0:
+            allOutputs[1] = not stateModalErrField
+        elif btnCloseErrUC is not None and btnCloseErrUC > 0:
+            allOutputs[2] = not stateModalErrUC
+        else:
+            if statepDemandDisabled:
+                demand = stateDemand
+            else:
+                pDemand = statepDemand
+                fpDemand = stateDemand
+            # cadastra no db
+            conn = sql.connect('c:/Users/vidig/OneDrive/Python/agv/v1.0/agv.db')
+            cursor = conn.cursor()
+
+            # verifica se a uc já existe
+            existsUC = cursor.execute(
+                f'''
+                SELECT *
+                FROM ucs
+                WHERE uc = ?;
+                ''', (stateUC,)
+            ).fetchone()
+
+            if existsUC is not None:
+                allOutputs[2] = not stateModalErrUC
+                conn.close()
+
+            else:
+                try:
+                    cursor.execute(
+                        '''
+                            SELECT id
+                            FROM clientes
+                            WHERE nome = ?
+                        ''', (stateClient,)
+                    )
+                    clientID = cursor.fetchone()
+                    print(clientID)
+                    
+                except Exception as e:
+                    print(f'Erro ao executar SELECT: {e}')
+
+                try:
+                    cursor.execute(
+                        '''
+                            INSERT INTO ucs (concessionaria, cliente_id, uc, subgrupo, modalidade, demanda_contratada, demanda_contratada_ponta, demanda_contratada_fora_ponta, created_at)
+                            VALUES (?,?,?,?,?,?,?,?,?)
+                        ''',(stateUtilities, clientID[0], stateUC, stateGroup, stateModality, demand, pDemand, fpDemand, today)
+                    )
+                    allOutputs[0] = not stateModalAviso
+                    
+                except Exception as e:
+                    print(f'Erro ao executar INSERT: {e}')
+                
+                conn.commit()
+                conn.close()
+        
+
+    print (emptyFieldIndicator)
+    return allOutputs
+
+    
 
 def layout():
     layout = dbc.Container(
@@ -262,19 +410,20 @@ def layout():
                                             class_name='input-field-modal',
                                             id='input-demanda',
                                             # placeholder deve ser alterado no callback
-                                            placeholder='Demanda contratada (kW)',
-                                            type='number'
+                                            placeholder='Demanda Contratada (kW)',
+                                            type='number',
+                                            disabled=True
                                         )
                                     ),
 
                                     dbc.Col(
                                         dbc.Input(
                                             class_name='input-field-modal',
-                                            id='input-demanda-fponta',
-                                            placeholder='Demanda contratada fora ponta(kW)',
+                                            id='input-demanda-ponta',
+                                            placeholder='Demanda Contratada Ponta (kW)',
                                             type='number',
                                             # disabled deve ser alterado no callback
-                                            disabled=False
+                                            disabled=True
                                         )
                                     )
                                 ]
@@ -295,6 +444,7 @@ def layout():
                 size='lg'
             ),
 
+            # modalç de sucesso
             dbc.Modal(
                 children=[
                     dbc.ModalHeader(
@@ -307,15 +457,61 @@ def layout():
                     dbc.ModalBody('UC cadastrada com sucesso!'),
 
                     dbc.ModalFooter(
-                        dbc.Button(children='Fechar', id='btn-close-warning', n_clicks=0),
+                        dbc.Button(children='Fechar', id='btn-close-aviso', n_clicks=0),
                     )
                     
                 ],
-                is_open=True,
+                is_open=False,
                 id='modal-aviso',
                 size='md',
                 centered=True
-            )
+            ),
+
+            # modal de erro de preenchimento
+            dbc.Modal(
+                children=[
+                    dbc.ModalHeader(
+                        children=[
+                            html.I(className='fa-solid fa-xmark'),
+                            'Erro'
+                        ]
+                    ),
+
+                    dbc.ModalBody('Prencha os campos obrigatórios em vermelho'),
+
+                    dbc.ModalFooter(
+                        dbc.Button(children='Fechar', id='btn-close-err-field', n_clicks=0),
+                    )
+                    
+                ],
+                is_open=False,
+                id='modal-err-field',
+                size='md',
+                centered=True
+            ),
+            
+            # modal de erro de uc ja existente
+            dbc.Modal(
+                children=[
+                    dbc.ModalHeader(
+                        children=[
+                            html.I(className='fa-solid fa-xmark'),
+                            'Erro'
+                        ]
+                    ),
+
+                    dbc.ModalBody('UC já existente'),
+
+                    dbc.ModalFooter(
+                        dbc.Button(children='Fechar', id='btn-close-err-uc', n_clicks=0),
+                    )
+                    
+                ],
+                is_open=False,
+                id='modal-err-uc',
+                size='md',
+                centered=True
+            ),
 
         ]
     )

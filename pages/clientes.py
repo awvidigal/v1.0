@@ -264,6 +264,8 @@ def newRegister(btnInsert, btnCloseError, inputDocs, inputAddress, inputCity, se
                 allOutputs[0] = childrenErrClient
                 allOutputs[1] = not stateModal
                 # limpar os campos do modal principal?        
+        
+        print(allOutputs)
         return allOutputs
 
 
