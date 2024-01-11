@@ -86,19 +86,7 @@ def showModal(n1, n2, is_open):
     [
         Output(component_id='input-demanda',            component_property='placeholder'),
         Output(component_id='input-demanda',            component_property='disabled'),
-        Output(component_id='input-demanda-ponta',      component_property='disabled'),        
-        Output(component_id='input-demanda-ponta-jan',  component_property='disabled'),
-        Output(component_id='input-demanda-ponta-fev',  component_property='disabled'),
-        Output(component_id='input-demanda-ponta-mar',  component_property='disabled'),
-        Output(component_id='input-demanda-ponta-abr',  component_property='disabled'),
-        Output(component_id='input-demanda-ponta-mai',  component_property='disabled'),
-        Output(component_id='input-demanda-ponta-jun',  component_property='disabled'),
-        Output(component_id='input-demanda-ponta-jul',  component_property='disabled'),
-        Output(component_id='input-demanda-ponta-ago',  component_property='disabled'),
-        Output(component_id='input-demanda-ponta-set',  component_property='disabled'),
-        Output(component_id='input-demanda-ponta-out',  component_property='disabled'),
-        Output(component_id='input-demanda-ponta-nov',  component_property='disabled'),
-        Output(component_id='input-demanda-ponta-dez',  component_property='disabled'),
+        Output(component_id='input-demanda-ponta',      component_property='disabled'),
     ],
     [
         Input(component_id='select-subgrupo', component_property='value'),
@@ -117,35 +105,22 @@ def disabledInputs(selectSubgrupo, selectModalidade):
         'Demanda Contratada (kW)',  # 0 - input-demanda             | placeholder
         True,                       # 1 - input-demanda             | disabled
         True,                       # 2 - input-demanda-ponta       | disabled
-        True,                       # 3 - input-demanda-ponta-jan   | disabled
-        True,                       # 4 - input-demanda-ponta-fev   | disabled
-        True,                       # 5 - input-demanda-ponta-mar   | disabled
-        True,                       # 6 - input-demanda-ponta-abr   | disabled
-        True,                       # 7 - input-demanda-ponta-mai   | disabled                   
-        True,                       # 8 - input-demanda-ponta-jun   | disabled
-        True,                       # 9 - input-demanda-ponta-jul   | disabled
-        True,                       # 10 - input-demanda-ponta-ago  | disabled
-        True,                       # 11 - input-demanda-ponta-set  | disabled
-        True,                       # 12 - input-demanda-ponta-out  | disabled
-        True,                       # 13 - input-demanda-ponta-nov  | disabled
-        True,                       # 14 - input-demanda-ponta-dez  | disabled
     ]
 
     for grupo in baixaTensão:
         if selectSubgrupo == grupo:
-            allOutputs[1] = False
+            for pos in range(1,len(allOutputs)):
+                allOutputs[pos] = True            
             break
         else:
-            allOutputs[1] = True
+            allOutputs[1] = False
 
     if selectModalidade == 'Azul':
-        for pos in range(2, len(allOutputs)):
-            allOutputs[pos] = False
+        allOutputs[2] = False
         allOutputs[0] = 'Demanda Fora Ponta (kW)'
-    else:
-        for pos in range(2, len(allOutputs)):
-            allOutputs[pos] = True
+    elif selectModalidade == 'Verde':
         allOutputs[0] = 'Demanda (kW)'
+        allOutputs[2] = True
     
     return allOutputs
 
@@ -181,53 +156,11 @@ def disabledInputs(selectSubgrupo, selectModalidade):
         State(component_id='input-demanda-ponta',   component_property='value'),
         State(component_id='input-demanda',         component_property='disabled'),
         State(component_id='input-demanda-ponta',   component_property='disabled'),
-        # valores de consumo
-        State(component_id='input-consumo-jan',     component_property='value'),
-        State(component_id='input-consumo-fev',     component_property='value'),
-        State(component_id='input-consumo-mar',     component_property='value'),
-        State(component_id='input-consumo-abr',     component_property='value'),
-        State(component_id='input-consumo-mai',     component_property='value'),
-        State(component_id='input-consumo-jun',     component_property='value'),
-        State(component_id='input-consumo-jul',     component_property='value'),
-        State(component_id='input-consumo-ago',     component_property='value'),
-        State(component_id='input-consumo-set',     component_property='value'),
-        State(component_id='input-consumo-out',     component_property='value'),
-        State(component_id='input-consumo-nov',     component_property='value'),
-        State(component_id='input-consumo-dez',     component_property='value'),
-        # valores de demanda
-        State(component_id='input-demanda-jan',     component_property='value'),
-        State(component_id='input-demanda-fev',     component_property='value'),
-        State(component_id='input-demanda-mar',     component_property='value'),
-        State(component_id='input-demanda-abr',     component_property='value'),
-        State(component_id='input-demanda-mai',     component_property='value'),
-        State(component_id='input-demanda-jun',     component_property='value'),
-        State(component_id='input-demanda-jul',     component_property='value'),
-        State(component_id='input-demanda-ago',     component_property='value'),
-        State(component_id='input-demanda-set',     component_property='value'),
-        State(component_id='input-demanda-out',     component_property='value'),
-        State(component_id='input-demanda-nov',     component_property='value'),
-        State(component_id='input-demanda-dez',     component_property='value'),
-        # valores de demanda ponta
-        State(component_id='input-demanda-ponta-jan',    component_property='value'),
-        State(component_id='input-demanda-ponta-fev',    component_property='value'),
-        State(component_id='input-demanda-ponta-mar',    component_property='value'),
-        State(component_id='input-demanda-ponta-abr',    component_property='value'),
-        State(component_id='input-demanda-ponta-mai',    component_property='value'),
-        State(component_id='input-demanda-ponta-jun',    component_property='value'),
-        State(component_id='input-demanda-ponta-jul',    component_property='value'),
-        State(component_id='input-demanda-ponta-ago',    component_property='value'),
-        State(component_id='input-demanda-ponta-set',    component_property='value'),
-        State(component_id='input-demanda-ponta-out',    component_property='value'),
-        State(component_id='input-demanda-ponta-nov',    component_property='value'),
-        State(component_id='input-demanda-ponta-dez',    component_property='value'),
     ],
     prevent_initial_call=True
 )
 def cadastrarUc(btnInsertUc, btnCloseAviso, btnCloseErrField, btnCloseErrUC, 
-                stateModalAviso, stateModalErrField, stateModalErrUC, stateClient, stateUtilities, stateUC, stateGroup, stateModality, stateDemand, statepDemand, stateDemandDisabled, statepDemandDisabled, 
-                stateConsJan, stateConsFev, stateConsMar, stateConsAbr, stateConsMai, stateConsJun, stateConsJul, stateConsAgo, stateConsSet, stateConsOut, stateConsNov, stateConsDez, 
-                stateDemJan, stateDemFev, stateDemMar, stateDemAbr, stateDemMai, stateDemJun, stateDemJul, stateDemAgo, stateDemSet, stateDemOut, stateDemNov, stateDemDez,
-                stateDemPJan, stateDemPFev, stateDemPMar, stateDemPAbr, stateDemPMai, stateDemPJun, stateDemPJul, stateDemPAgo, stateDemPSet, stateDemPOut, stateDemPNov, stateDemPDez):
+                stateModalAviso, stateModalErrField, stateModalErrUC, stateClient, stateUtilities, stateUC, stateGroup, stateModality, stateDemand, statepDemand, stateDemandDisabled, statepDemandDisabled):
     '''
         As saídas estão organizadas em uma lista que é retornada ao final de cada execução. Estão numeradas da seguinte forma dentro dessa lista:
             modal-aviso             | is_open       -> 0
@@ -240,19 +173,6 @@ def cadastrarUc(btnInsertUc, btnCloseAviso, btnCloseErrField, btnCloseErrUC,
             select-modalidade       | class_name    -> 7
             input-demanda           | class_name    -> 8
             input-demanda-ponta     | class_name    -> 9
-            input-demanda-ponta-jan | disabled      -> 10
-            input-demanda-ponta-fev | disabled      -> 11
-            input-demanda-ponta-mar | disabled      -> 12
-            input-demanda-ponta-abr | disabled      -> 13
-            input-demanda-ponta-mai | disabled      -> 14
-            input-demanda-ponta-jun | disabled      -> 15
-            input-demanda-ponta-jul | disabled      -> 16
-            input-demanda-ponta-ago | disabled      -> 17
-            input-demanda-ponta-set | disabled      -> 18
-            input-demanda-ponta-out | disabled      -> 19
-            input-demanda-ponta-nov | disabled      -> 20
-            input-demanda-ponta-dez | disabled      -> 21
-            
     '''
 
     allOutputs = [
@@ -525,423 +445,6 @@ def layout():
                                 ]
                             ),
                             html.Hr(),
-
-                            'DADOS DE CONSUMO',
-                            html.Br(),
-
-                            dbc.Row(
-                                dbc.Col(
-                                    children=[
-                                        dbc.InputGroup(
-                                            children=[
-                                                dbc.InputGroupText('Jan'),
-                                                dbc.Input(placeholder='Consumo', id='input-consumo-jan'),
-                                                dbc.InputGroupText('kWh'),
-                                                dbc.Input(placeholder='Consumo Ponta', id='input-consumo-ponta-jan', disabled=True),
-                                                dbc.InputGroupText('kWh')  
-                                            ],
-                                            className='mb-3',
-                                        )
-                                    ]
-                                )
-                            ),
-
-                            dbc.Row(
-                                dbc.Col(
-                                    children=[
-                                        dbc.InputGroup(
-                                            children=[
-                                                dbc.InputGroupText('Fev'),
-                                                dbc.Input(placeholder='Consumo', id='input-consumo-fev'),
-                                                dbc.InputGroupText('kWh'),
-                                                dbc.Input(placeholder='Consumo Ponta', id='input-consumo-ponta-fev', disabled=True),
-                                                dbc.InputGroupText('kWh')                                                
-                                            ],
-                                            className='mb-3'
-                                        )
-                                    ]
-                                )
-                            ),
-
-                            dbc.Row(
-                                dbc.Col(
-                                    children=[
-                                        dbc.InputGroup(
-                                            children=[
-                                                dbc.InputGroupText('Mar'),
-                                                dbc.Input(placeholder='Consumo', id='input-consumo-mar'),
-                                                dbc.InputGroupText('kWh'),
-                                                dbc.Input(placeholder='Consumo Ponta', id='input-consumo-ponta-mar', disabled=True),
-                                                dbc.InputGroupText('kWh')                                                
-                                            ],
-                                            className='mb-3'
-                                        )
-                                    ]
-                                )
-                            ),
-
-                            dbc.Row(
-                                dbc.Col(
-                                    children=[
-                                        dbc.InputGroup(
-                                            children=[
-                                                dbc.InputGroupText('Abr'),
-                                                dbc.Input(placeholder='Consumo', id='input-consumo-abr'),
-                                                dbc.InputGroupText('kWh'),
-                                                dbc.Input(placeholder='Consumo Ponta', id='input-conusmo-ponta-abr', disabled=True),
-                                                dbc.InputGroupText('kWh')                                              
-                                            ],
-                                            className='mb-3'
-                                        )
-                                    ]
-                                )
-                            ),
-
-                            dbc.Row(
-                                dbc.Col(
-                                    children=[
-                                        dbc.InputGroup(
-                                            children=[
-                                                dbc.InputGroupText('Mai'),
-                                                dbc.Input(placeholder='Consumo', id='input-consumo-mai'),
-                                                dbc.InputGroupText('kWh'),
-                                                dbc.Input(placeholder='Consumo Ponta', id='input-consumo-ponta-mai', disabled=True),
-                                                dbc.InputGroupText('kWh')                                               
-                                            ],
-                                            className='mb-3'
-                                        )
-                                    ]
-                                )
-                            ),
-
-                            dbc.Row(
-                                dbc.Col(
-                                    children=[
-                                        dbc.InputGroup(
-                                            children=[
-                                                dbc.InputGroupText('Jun'),
-                                                dbc.Input(placeholder='Consumo', id='input-consumo-jun'),
-                                                dbc.InputGroupText('kWh'),
-                                                dbc.Input(placeholder='Consumo Ponta', id='input-consumo-ponta-jun', disabled=True),
-                                                dbc.InputGroupText('kWh')
-                                            ],
-                                            className='mb-3'
-                                        )
-                                    ]
-                                )
-                            ),
-
-                            dbc.Row(
-                                dbc.Col(
-                                    children=[
-                                        dbc.InputGroup(
-                                            children=[
-                                                dbc.InputGroupText('Jul'),
-                                                dbc.Input(placeholder='Consumo', id='input-consumo-jul'),
-                                                dbc.InputGroupText('kWh'),
-                                                dbc.Input(placeholder='Consumo Ponta', id='input-consumo-ponta-jul', disabled=True),
-                                                dbc.InputGroupText('kWh')                                                
-                                            ],
-                                            className='mb-3'
-                                        )
-                                    ]
-                                )
-                            ), 
-
-                             dbc.Row(
-                                dbc.Col(
-                                    children=[
-                                        dbc.InputGroup(
-                                            children=[
-                                                dbc.InputGroupText('Ago'),
-                                                dbc.Input(placeholder='Consumo', id='input-consumo-ago'),
-                                                dbc.InputGroupText('kWh'),
-                                                dbc.Input(placeholder='Consumo Ponta', id='input-consumo-ponta-ago', disabled=True),
-                                                dbc.InputGroupText('kWh')                                                 
-                                            ],
-                                            className='mb-3'
-                                        )
-                                    ]
-                                )
-                            ),
-
-                             dbc.Row(
-                                dbc.Col(
-                                    children=[
-                                        dbc.InputGroup(
-                                            children=[
-                                                dbc.InputGroupText('Set'),
-                                                dbc.Input(placeholder='Consumo', id='input-consumo-set'),
-                                                dbc.InputGroupText('kWh'),
-                                                dbc.Input(placeholder='Consumo Ponta', id='input-consumo-ponta-set', disabled=True),
-                                                dbc.InputGroupText('kWh')                                                 
-                                            ],
-                                            className='mb-3'
-                                        )
-                                    ]
-                                )
-                            ),
-
-                             dbc.Row(
-                                dbc.Col(
-                                    children=[
-                                        dbc.InputGroup(
-                                            children=[
-                                                dbc.InputGroupText('Out'),
-                                                dbc.Input(placeholder='Consumo', id='input-consumo-out'),
-                                                dbc.InputGroupText('kWh'),
-                                                dbc.Input(placeholder='Consumo Ponta', id='input-consumo-ponta-out', disabled=True),
-                                                dbc.InputGroupText('kWh')                                                 
-                                            ],
-                                            className='mb-3'
-                                        )
-                                    ]
-                                )
-                            ),
-
-                             dbc.Row(
-                                dbc.Col(
-                                    children=[
-                                        dbc.InputGroup(
-                                            children=[
-                                                dbc.InputGroupText('Nov'),
-                                                dbc.Input(placeholder='Consumo', id='input-consumo-nov'),
-                                                dbc.InputGroupText('kWh'),
-                                                dbc.Input(placeholder='Consumo Ponta', id='input-consumo-ponta-nov', disabled=True),
-                                                dbc.InputGroupText('kWh')                                                
-                                            ],
-                                            className='mb-3'
-                                        )
-                                    ]
-                                )
-                            ),
-
-                             dbc.Row(
-                                dbc.Col(
-                                    children=[
-                                        dbc.InputGroup(
-                                            children=[
-                                                dbc.InputGroupText('Dez'),
-                                                dbc.Input(placeholder='Consumo', id='input-consumo-dez'),
-                                                dbc.InputGroupText('kWh'),
-                                                dbc.Input(placeholder='Consumo Ponta', id='input-consumo-ponta-dez', disabled=True),
-                                                dbc.InputGroupText('kWh')                                                 
-                                            ],
-                                            className='mb-3'
-                                        )
-                                    ]
-                                )
-                            ),
-
-                            'DADOS DE DEMANDA',
-                            html.Br(),
-
-                            dbc.Row(
-                                dbc.Col(
-                                    children=[
-                                        dbc.InputGroup(
-                                            children=[
-                                                dbc.InputGroupText('Jan'),
-                                                dbc.Input(placeholder='Demanda', id='input-demanda-jan'),
-                                                dbc.InputGroupText('kW'),
-                                                dbc.Input(placeholder='Demanda Ponta', id='input-demanda-ponta-jan', disabled=True),
-                                                dbc.InputGroupText('kW')  
-                                            ],
-                                            className='mb-3',
-                                        )
-                                    ]
-                                )
-                            ),
-
-                            dbc.Row(
-                                dbc.Col(
-                                    children=[
-                                        dbc.InputGroup(
-                                            children=[
-                                                dbc.InputGroupText('Fev'),
-                                                dbc.Input(placeholder='Demanda', id='input-demanda-fev'),
-                                                dbc.InputGroupText('kW'),
-                                                dbc.Input(placeholder='Demanda Ponta', id='input-demanda-ponta-fev', disabled=True),
-                                                dbc.InputGroupText('kW')                                                
-                                            ],
-                                            className='mb-3'
-                                        )
-                                    ]
-                                )
-                            ),
-
-                            dbc.Row(
-                                dbc.Col(
-                                    children=[
-                                        dbc.InputGroup(
-                                            children=[
-                                                dbc.InputGroupText('Mar'),
-                                                dbc.Input(placeholder='Demanda', id='input-demanda-mar'),
-                                                dbc.InputGroupText('kW'),
-                                                dbc.Input(placeholder='Demanda Ponta', id='input-demanda-ponta-mar', disabled=True),
-                                                dbc.InputGroupText('kW')                                                
-                                            ],
-                                            className='mb-3'
-                                        )
-                                    ]
-                                )
-                            ),
-
-                            dbc.Row(
-                                dbc.Col(
-                                    children=[
-                                        dbc.InputGroup(
-                                            children=[
-                                                dbc.InputGroupText('Abr'),
-                                                dbc.Input(placeholder='Demanda', id='input-demanda-abr'),
-                                                dbc.InputGroupText('kW'),
-                                                dbc.Input(placeholder='Demanda Ponta', id='input-conusmo-ponta-abr', disabled=True),
-                                                dbc.InputGroupText('kW')                                              
-                                            ],
-                                            className='mb-3'
-                                        )
-                                    ]
-                                )
-                            ),
-
-                            dbc.Row(
-                                dbc.Col(
-                                    children=[
-                                        dbc.InputGroup(
-                                            children=[
-                                                dbc.InputGroupText('Mai'),
-                                                dbc.Input(placeholder='Demanda', id='input-demanda-mai'),
-                                                dbc.InputGroupText('kW'),
-                                                dbc.Input(placeholder='Demanda Ponta', id='input-demanda-ponta-mai', disabled=True),
-                                                dbc.InputGroupText('kW')                                               
-                                            ],
-                                            className='mb-3'
-                                        )
-                                    ]
-                                )
-                            ),
-
-                            dbc.Row(
-                                dbc.Col(
-                                    children=[
-                                        dbc.InputGroup(
-                                            children=[
-                                                dbc.InputGroupText('Jun'),
-                                                dbc.Input(placeholder='Demanda', id='input-demanda-jun'),
-                                                dbc.InputGroupText('kW'),
-                                                dbc.Input(placeholder='Demanda Ponta', id='input-demanda-ponta-jun', disabled=True),
-                                                dbc.InputGroupText('kW')
-                                            ],
-                                            className='mb-3'
-                                        )
-                                    ]
-                                )
-                            ),
-
-                            dbc.Row(
-                                dbc.Col(
-                                    children=[
-                                        dbc.InputGroup(
-                                            children=[
-                                                dbc.InputGroupText('Jul'),
-                                                dbc.Input(placeholder='Demanda', id='input-demanda-jul'),
-                                                dbc.InputGroupText('kW'),
-                                                dbc.Input(placeholder='Demanda Ponta', id='input-demanda-ponta-jul', disabled=True),
-                                                dbc.InputGroupText('kW')                                                
-                                            ],
-                                            className='mb-3'
-                                        )
-                                    ]
-                                )
-                            ), 
-
-                             dbc.Row(
-                                dbc.Col(
-                                    children=[
-                                        dbc.InputGroup(
-                                            children=[
-                                                dbc.InputGroupText('Ago'),
-                                                dbc.Input(placeholder='Demanda', id='input-demanda-ago'),
-                                                dbc.InputGroupText('kW'),
-                                                dbc.Input(placeholder='Demanda Ponta', id='input-demanda-ponta-ago', disabled=True),
-                                                dbc.InputGroupText('kW')                                                 
-                                            ],
-                                            className='mb-3'
-                                        )
-                                    ]
-                                )
-                            ),
-
-                             dbc.Row(
-                                dbc.Col(
-                                    children=[
-                                        dbc.InputGroup(
-                                            children=[
-                                                dbc.InputGroupText('Set'),
-                                                dbc.Input(placeholder='Demanda', id='input-demanda-set'),
-                                                dbc.InputGroupText('kW'),
-                                                dbc.Input(placeholder='Demanda Ponta', id='input-demanda-ponta-set', disabled=True),
-                                                dbc.InputGroupText('kW')                                                 
-                                            ],
-                                            className='mb-3'
-                                        )
-                                    ]
-                                )
-                            ),
-
-                             dbc.Row(
-                                dbc.Col(
-                                    children=[
-                                        dbc.InputGroup(
-                                            children=[
-                                                dbc.InputGroupText('Out'),
-                                                dbc.Input(placeholder='Demanda', id='input-demanda-out'),
-                                                dbc.InputGroupText('kW'),
-                                                dbc.Input(placeholder='Demanda Ponta', id='input-demanda-ponta-out', disabled=True),
-                                                dbc.InputGroupText('kW')                                                 
-                                            ],
-                                            className='mb-3'
-                                        )
-                                    ]
-                                )
-                            ),
-
-                             dbc.Row(
-                                dbc.Col(
-                                    children=[
-                                        dbc.InputGroup(
-                                            children=[
-                                                dbc.InputGroupText('Nov'),
-                                                dbc.Input(placeholder='Demanda', id='input-demanda-nov'),
-                                                dbc.InputGroupText('kW'),
-                                                dbc.Input(placeholder='Demanda Ponta', id='input-demanda-ponta-nov', disabled=True),
-                                                dbc.InputGroupText('kW')                                                
-                                            ],
-                                            className='mb-3'
-                                        )
-                                    ]
-                                )
-                            ),
-
-                             dbc.Row(
-                                dbc.Col(
-                                    children=[
-                                        dbc.InputGroup(
-                                            children=[
-                                                dbc.InputGroupText('Dez'),
-                                                dbc.Input(placeholder='Demanda', id='input-demanda-dez'),
-                                                dbc.InputGroupText('kW'),
-                                                dbc.Input(placeholder='Demanda Ponta', id='input-demanda-ponta-dez', disabled=True),
-                                                dbc.InputGroupText('kW')                                                 
-                                            ],
-                                            className='mb-3'
-                                        )
-                                    ]
-                                )
-                            ),
-
-
-                                
                         ],
                     ),
 

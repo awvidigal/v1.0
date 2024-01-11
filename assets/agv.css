@@ -110,3 +110,9 @@ body{
 .div-table{
     justify-content: center;
 }
+
+#btn-new-proposal{
+    background-color: #2f5bad;
+    margin-top: 20px;
+    border-radius: 30px;    
+}
