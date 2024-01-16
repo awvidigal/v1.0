@@ -14,6 +14,9 @@ dash.register_page(
     path='/orcamentos'
 )
 
+year=datetime.datetime.now()
+year=year.year
+
 conn = sql.connect('c:/Users/vidig/OneDrive/Python/agv/v1.0/agv.db')
 cursor = conn.cursor()
 
@@ -24,9 +27,28 @@ cursor.execute(
     '''
 )
 ucs = cursor.fetchall()
+
+cursor.execute(
+    '''
+        SELECT subgrupo
+        FROM subgrupos
+    '''
+)
+subgroups = cursor.fetchall()
+
+cursor.execute(
+    '''
+        SELECT modalidade
+        FROM modalidades
+    '''
+)
+modalities = cursor.fetchall()
+
 conn.close()
 
 ucs = [uc[0] for uc in ucs]
+subgroups = [subgroup[0] for subgroup in subgroups]
+modalities = [modality[0] for modality in modalities]
 
 
 def layout():
@@ -485,13 +507,300 @@ def layout():
                                             )
                                         ],
                                         title='DADOS DE DEMANDA'
+                                    ),
+                                    dbc.AccordionItem(
+                                        children=[
+                                            dbc.Row(
+                                                children=[
+                                                    dbc.Col(
+                                                        children=[
+                                                            dbc.RadioItems(
+                                                                options=[
+                                                                    {'label':'Ajuste de subgrupo', 'value':1}
+                                                                ],
+                                                                id='switch-subgrupo',
+                                                                switch=True
+                                                            )
+                                                        ],
+                                                        width={'size':3, 'offset':0}
+                                                    ),
+
+                                                    dbc.Col(
+                                                        children=[
+                                                            dbc.Select(
+                                                                class_name='input-field-modal',
+                                                                options=subgroups,
+                                                                id='select-subgrupo-ajustado',
+                                                                placeholder='Subgrupo ajustado...',
+                                                                size='md'
+                                                            )
+                                                        ],
+                                                        width={'size':3, 'offset':0}
+                                                    )
+                                                ],
+                                                align='center'
+                                            ),
+
+                                            dbc.Row(
+                                                children=[
+                                                    dbc.Col(
+                                                        children=[
+                                                            dbc.RadioItems(
+                                                                options=[
+                                                                    {'label':'Ajuste de modalidade', 'value':2}
+                                                                ],
+                                                                id='switch-modality',
+                                                                switch=True
+                                                            )
+                                                        ],
+                                                        width={'size':3, 'offset':0}
+                                                    ),
+
+                                                    dbc.Col(
+                                                        children=[
+                                                            dbc.Select(
+                                                                class_name='input-field-modal',
+                                                                options=modalities,
+                                                                id='adjust-modality',
+                                                                placeholder='Modalidade ajustada...',
+                                                                size='md'
+                                                            )
+                                                        ],
+                                                        width={'size':3, 'offset':0}
+                                                    )
+                                                ],
+                                                align='center'
+                                            ),
+
+                                            dbc.Row(
+                                                children=[
+                                                    dbc.Col(
+                                                        children=[
+                                                            dbc.RadioItems(
+                                                                options=[
+                                                                    {'label':'Ajuste de demanda', 'value':3}
+                                                                ],
+                                                                id='switch-demand',
+                                                                switch=True,
+                                                                value=[1]
+                                                            )
+                                                        ],
+                                                        width={'size':3, 'offset':0}
+                                                    ),
+
+                                                    dbc.Col(
+                                                        children=[
+                                                            dbc.Input(
+                                                                class_name='input-field-modal',
+                                                                id='adjust-demand',
+                                                                placeholder='Demanda ajustada...',
+                                                                type='number',
+                                                                size='md'
+                                                            )
+                                                        ],
+                                                        width={'size':3, 'offset':0}
+                                                    )
+                                                ],
+                                                align='center'
+                                            ),
+                                        ],
+                                        title='DADOS DE AJUSTE'
+                                    ),
+                                    dbc.AccordionItem(
+                                        children=[
+                                            dbc.Row(
+                                                children=[
+                                                    dbc.RadioItems(
+                                                        options=[
+                                                            {'label':'GD', 'value':1},
+                                                            {'label':'ACL', 'value':2}
+                                                        ],
+                                                        value=1,
+                                                        id='radio-choose-mode',
+                                                        inline=True
+                                                    )
+                                                ]
+                                            ),
+                                            html.Br(),
+                                            dbc.Row(
+                                                children=[
+                                                    dbc.InputGroup(
+                                                        children=[
+                                                            dbc.Input(
+                                                                id='input-gddiscount-acltime',
+                                                                type='number',
+                                                                placeholder='Desconto na fatura',
+                                                                class_name='inputgroup-left-field-modal'
+                                                            ),
+                                                            dbc.InputGroupText(
+                                                                children='%',
+                                                                id='input-percentage-years',
+                                                                class_name='inputgroup-right-field-modal'
+                                                            )
+                                                        ],
+                                                    )
+                                                ] 
+                                            ),
+                                            html.Br(),
+
+                                            dbc.Fade(
+                                                dbc.Row(
+                                                    children=[
+                                                        dbc.Col(
+                                                            children=[
+                                                                dbc.Row(
+                                                                    children=[
+                                                                        dbc.InputGroup(
+                                                                            children=[
+                                                                                dbc.InputGroupText(year, class_name='inputgroup-left-field-modal'),
+                                                                                dbc.Input(
+                                                                                    id='input-price-year-0',
+                                                                                    placeholder='Preço (R$/MWh)',
+                                                                                    class_name='inputgroup-right-field-modal'
+                                                                                )
+                                                                            ]
+                                                                        )
+                                                                    ]
+                                                                ),
+
+                                                                dbc.Row(
+                                                                    children=[
+                                                                        dbc.InputGroup(
+                                                                            children=[
+                                                                                dbc.InputGroupText(year+1, class_name='inputgroup-left-field-modal'),
+                                                                                dbc.Input(
+                                                                                    id='input-price-year-1',
+                                                                                    placeholder='Preço (R$/MWh)',
+                                                                                    class_name='inputgroup-right-field-modal'
+                                                                                )
+                                                                            ]
+                                                                        )
+                                                                    ]
+                                                                ),
+
+                                                                dbc.Row(
+                                                                    children=[
+                                                                        dbc.InputGroup(
+                                                                            children=[
+                                                                                dbc.InputGroupText(year+2, class_name='inputgroup-left-field-modal'),
+                                                                                dbc.Input(
+                                                                                    id='input-price-year-2',
+                                                                                    placeholder='Preço (R$/MWh)',
+                                                                                    class_name='inputgroup-right-field-modal'
+                                                                                )
+                                                                            ]
+                                                                        )
+                                                                    ]
+                                                                ),
+
+                                                                dbc.Row(
+                                                                    children=[
+                                                                        dbc.InputGroup(
+                                                                            children=[
+                                                                                dbc.InputGroupText(year+3, class_name='inputgroup-left-field-modal'),
+                                                                                dbc.Input(
+                                                                                    id='input-price-year-3',
+                                                                                    placeholder='Preço (R$/MWh)',
+                                                                                    class_name='inputgroup-right-field-modal'
+                                                                                )
+                                                                            ]
+                                                                        )
+                                                                    ]
+                                                                ),
+
+                                                                dbc.Row(
+                                                                    children=[
+                                                                        dbc.InputGroup(
+                                                                            children=[
+                                                                                dbc.InputGroupText(year+4, class_name='inputgroup-left-field-modal'),
+                                                                                dbc.Input(
+                                                                                    id='input-price-year-4',
+                                                                                    placeholder='Preço (R$/MWh)',
+                                                                                    class_name='inputgroup-right-field-modal'
+                                                                                )
+                                                                            ]
+                                                                        )
+                                                                    ]
+                                                                )
+                                                            ],
+                                                            width={'size':4, 'offset':0}
+                                                        ),
+
+                                                        dbc.Col(
+                                                            children=[
+                                                                dbc.Row(
+                                                                    children=[
+                                                                        dbc.InputGroup(
+                                                                            children=[
+                                                                                dbc.InputGroupText(
+                                                                                    children='Reajuste Anual:',
+                                                                                    class_name='inputgroup-left-field-modal'
+                                                                                ),
+                                                                                dbc.Input(
+                                                                                    id='input-annual-adjustment',
+                                                                                    class_name='inputgroup-middle-field-modal',
+                                                                                    type='number',
+                                                                                    value=3.91                                                                                    
+                                                                                ),
+                                                                                dbc.InputGroupText(
+                                                                                    children='%',
+                                                                                    class_name='inputgroup-right-field-modal'
+                                                                                )
+                                                                            ]
+                                                                        )
+                                                                    ]
+                                                                ),
+                                                                dbc.Row(
+                                                                    children=[
+                                                                        dbc.InputGroup(
+                                                                            children=[
+                                                                                dbc.InputGroupText(
+                                                                                    children='Desconto TUSD:',
+                                                                                    class_name='inputgroup-left-field-modal'
+                                                                                ),
+                                                                                dbc.Input(
+                                                                                    id='input-tusd-discount',
+                                                                                    class_name='inputgroup-middle-field-modal',
+                                                                                    type='number',
+                                                                                ),
+                                                                                dbc.InputGroupText(
+                                                                                    children='%',
+                                                                                    class_name='inputgroup-right-field-modal'
+                                                                                )
+                                                                            ]
+                                                                        )
+                                                                    ]
+                                                                )
+                                                            ],
+                                                            width={'size':4, 'offset':4}
+                                                        )
+                                                    ]
+                                                ),
+                                                is_in=True
+                                            )
+                                        ],
+                                        title='DADOS DE FORNECIMENTO'
                                     )
                                 ],
                                 start_collapsed=True,
                                 
                             ),
+                            html.Br(),
+                        ]
+                    ),
+                    
+                    dbc.ModalFooter(
+                        children=[
+                            dbc.Button(
+                                children='Gerar Proposta',
+                                n_clicks=0,
+                                color='success',
+                                id='btn-gerar-proposta'
+                            )
                         ]
                     )
+                    
+                            
                 ],
                 is_open=True,
                 fullscreen=True

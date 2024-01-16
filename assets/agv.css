@@ -116,3 +116,37 @@ body{
     margin-top: 20px;
     border-radius: 30px;    
 }
+
+#adjust-demand{
+    margin-top: 10px;
+}
+
+#adjust-modality{
+    margin-top: 10px;
+}
+
+.inputgroup-right-field-modal{    
+    border-top-right-radius: 30px;
+    border-bottom-right-radius: 30px;
+    border-width: 1px;
+    margin-top: 5px;
+}
+
+.inputgroup-left-field-modal{    
+    border-top-left-radius: 30px;
+    border-bottom-left-radius: 30px;
+    border-width: 1px;
+    margin-top: 5px;
+}
+
+.inputgroup-middle-field-modal{    
+    border-width: 1px;
+    margin-top: 5px;
+}
+
+#btn-gerar-proposta{
+    margin-bottom: 5px;
+    justify-content: center;
+    float: right;
+    margin-right: 5%;
+}
