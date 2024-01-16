@@ -50,6 +50,71 @@ ucs = [uc[0] for uc in ucs]
 subgroups = [subgroup[0] for subgroup in subgroups]
 modalities = [modality[0] for modality in modalities]
 
+# Abre o modal de nova proposta
+@callback(
+    [
+        Output(component_id='modal-novo-orcamento', component_property='is_open')
+    ],
+    [
+        Input(component_id='btn-new-proposal',      component_property='n_clicks'),
+        Input(component_id='btn-gerar-proposta',    component_property='n_clicks')
+    ],
+    [
+        State(component_id='modal-novo-orcamento', component_property='is_open')
+    ],
+    prevent_initial_call=True
+)
+def openModalOrcamento(btnNewProposal, btnGenerateProposal, stateIsOpen):
+    if btnNewProposal > 0 or btnGenerateProposal > 0:
+        return [not stateIsOpen]
+    return [stateIsOpen]
+
+# Função para habilitar campos de demanda e consumo em função da modalidade e subgrupo
+@callback(
+    [
+        # inputs de consumo ponta
+        Output(component_id='input-consumo-ponta-jan', component_property='disabled'),
+        Output(component_id='input-consumo-ponta-fev', component_property='disabled'),
+        Output(component_id='input-consumo-ponta-mar', component_property='disabled'),
+        Output(component_id='input-consumo-ponta-abr', component_property='disabled'),
+        Output(component_id='input-consumo-ponta-mai', component_property='disabled'),
+        Output(component_id='input-consumo-ponta-jun', component_property='disabled'),
+        Output(component_id='input-consumo-ponta-jul', component_property='disabled'),
+        Output(component_id='input-consumo-ponta-ago', component_property='disabled'),
+        Output(component_id='input-consumo-ponta-set', component_property='disabled'),
+        Output(component_id='input-consumo-ponta-out', component_property='disabled'),
+        Output(component_id='input-consumo-ponta-nov', component_property='disabled'),
+        Output(component_id='input-consumo-ponta-dez', component_property='disabled'),
+
+        # inputs de demanda
+        Output(component_id='input-demanda-jan', component_property='placeholder'),
+        Output(component_id='input-demanda-fev', component_property='placeholder'),
+        Output(component_id='input-demanda-mar', component_property='placeholder'),
+        Output(component_id='input-demanda-abr', component_property='placeholder'),
+        Output(component_id='input-demanda-mai', component_property='placeholder'),
+        Output(component_id='input-demanda-jun', component_property='placeholder'),
+        Output(component_id='input-demanda-jul', component_property='placeholder'),
+        Output(component_id='input-demanda-ago', component_property='placeholder'),
+        Output(component_id='input-demanda-set', component_property='placeholder'),
+        Output(component_id='input-demanda-out', component_property='placeholder'),
+        Output(component_id='input-demanda-nov', component_property='placeholder'),
+        Output(component_id='input-demanda-dez', component_property='placeholder'),
+
+        # inputs de demanda ponta
+        Output(component_id='input-demanda-ponta-jan', component_property='disabled'),
+        Output(component_id='input-demanda-ponta-fev', component_property='disabled'),
+        Output(component_id='input-demanda-ponta-mar', component_property='disabled'),
+        Output(component_id='input-demanda-ponta-abr', component_property='disabled'),
+        Output(component_id='input-demanda-ponta-mai', component_property='disabled'),
+        Output(component_id='input-demanda-ponta-jun', component_property='disabled'),
+        Output(component_id='input-demanda-ponta-jul', component_property='disabled'),
+        Output(component_id='input-demanda-ponta-ago', component_property='disabled'),
+        Output(component_id='input-demanda-ponta-set', component_property='disabled'),
+        Output(component_id='input-demanda-ponta-out', component_property='disabled'),
+        Output(component_id='input-demanda-ponta-nov', component_property='disabled'),
+        Output(component_id='input-demanda-ponta-dez', component_property='disabled'),
+    ]        
+)
 
 def layout():
     layout = dbc.Container(
@@ -802,8 +867,9 @@ def layout():
                     
                             
                 ],
-                is_open=True,
-                fullscreen=True
+                is_open=False,
+                fullscreen=True,
+                id='modal-novo-orcamento'
             )
         ]
     )
