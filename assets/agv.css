@@ -150,3 +150,7 @@ body{
     float: right;
     margin-right: 5%;
 }
+
+.switch{
+    border-radius: 10px;
+}
