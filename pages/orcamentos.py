@@ -14,8 +14,8 @@ dash.register_page(
     path='/orcamentos'
 )
 
-year=datetime.datetime.now()
-year=year.year
+today=datetime.datetime.now()
+year=today.year
 
 conn = sql.connect('c:/Users/vidig/OneDrive/Python/agv/v1.0/agv.db')
 cursor = conn.cursor()
@@ -44,11 +44,21 @@ cursor.execute(
 )
 modalities = cursor.fetchall()
 
+# cursor.execute(
+#     f'''
+#         SELECT *
+#         FROM orcamentos
+#         WHERE created_at = 
+#     '''
+# )
+# datas = cursor.fetchall()
+
 conn.close()
 
 ucs = [uc[0] for uc in ucs]
 subgroups = [subgroup[0] for subgroup in subgroups]
 modalities = [modality[0] for modality in modalities]
+# datas = [data[0] for data in datas]
 
 # Abre o modal de nova proposta
 @callback(
@@ -310,9 +320,35 @@ def fieldsEnable(inputUC, swSubGroup, swModality, swDemand, rdModeInput, inputYe
     print(allOutputs)
     return allOutputs
 
+# @callback(
+#         Input(component_id='btn-gerar-proposta', component_property='n_clicks'),
+#         prevent_initial_call = True
+# )
+# def proposalGenerate(btnGenerate):
+#     pass
 
 
 def layout():
+    today = datetime.datetime.now()
+    nowYear = today.year
+    nowMonth = today.month
+    today = today.day
+
+    nowYear = str(nowYear)
+    nowYear = nowYear[2:]
+
+    if nowMonth < 10:
+        nowMonth = str(nowMonth)
+        nowMonth = f'0{nowMonth}'
+    else:
+        nowMonth = str(nowMonth)
+
+    if today < 10:
+        today = str(today)
+        today = f'0{today}'
+    else:
+        today = str(today)
+
     layout = dbc.Container(
         children=[
             dbc.Row(
@@ -1061,18 +1097,49 @@ def layout():
                                 children='Gerar Proposta',
                                 n_clicks=0,
                                 color='success',
-                                id='btn-gerar-proposta'
+                                id='btn-gerar-proposta',
                             )
                         ]
                     )
-                    
-                            
                 ],
                 is_open=False,
                 fullscreen=True,
                 id='modal-novo-orcamento'
+            ),
+
+            dbc.Modal(
+                children=[
+                    dbc.ModalHeader(
+                        children=[
+                            html.I(className='fa-solid fa-check'),
+                            'Sucesso'
+                        ]
+                    ),
+                    dbc.ModalBody(
+                        children=[
+                            'Proposta criada com sucesso!'
+                        ]
+                    ),
+                    dbc.ModalFooter(
+                        children=[
+                            dbc.Button(children='Fechar', id='btn-close', n_clicks=0)
+                        ]
+                    )
+                ]
+            ),
+
+            dbc.Modal(
+                children=[
+                    dbc.ModalHeader(
+                        children=[
+
+                        ]
+                    )
+                ]
             )
         ]
     )
+
+
 
     return layout

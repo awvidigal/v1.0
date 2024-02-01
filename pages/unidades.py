@@ -160,7 +160,9 @@ def disabledInputs(selectSubgrupo, selectModalidade):
     prevent_initial_call=True
 )
 def cadastrarUc(btnInsertUc, btnCloseAviso, btnCloseErrField, btnCloseErrUC, 
-                stateModalAviso, stateModalErrField, stateModalErrUC, stateClient, stateUtilities, stateUC, stateGroup, stateModality, stateDemand, statepDemand, stateDemandDisabled, statepDemandDisabled):
+                stateModalAviso, stateModalErrField, stateModalErrUC, stateClient, 
+                stateUtilities, stateUC, stateGroup, stateModality, stateDemand, 
+                statepDemand, stateDemandDisabled, statepDemandDisabled):
     '''
         As saídas estão organizadas em uma lista que é retornada ao final de cada execução. Estão numeradas da seguinte forma dentro dessa lista:
             modal-aviso             | is_open       -> 0
@@ -297,15 +299,15 @@ def cadastrarUc(btnInsertUc, btnCloseAviso, btnCloseErrField, btnCloseErrUC,
                 except Exception as e:
                     print(f'Erro ao executar INSERT: {e}')
                 
-                try:
-                    cursor.execute(
-                        '''
-                            INERT INTO consumos_baixa_tens
-                        '''
-                    )
+                # try:
+                #     cursor.execute(
+                #         '''
+                #             INERT INTO consumos_baixa_tens
+                #         '''
+                #     )
 
-                except Exception as e:
-                    pass
+                # except Exception as e:
+                #     pass
                 
                 conn.commit()
                 conn.close()
