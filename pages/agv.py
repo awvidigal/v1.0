@@ -130,7 +130,9 @@ class UC:
             - Verde
             - Branca
             - Convencional
-        : param demand: the contracted demand (optional. default[None])
+        :param demand: contracted demand for consumer units with the "Verde" modality(optional. default[None])
+        :param peakDemand: peak demand for consumer units with the "Azul" modality(optional. default[None])
+        :param offpeakDemand: off peak demand for consumer units with the "Azul" modality(optional. default[None])
 
         '''
         self.utilityCompany = utilityCompany
@@ -170,6 +172,13 @@ class UC:
             raise Exception('Not valid modality')
         
     def verifyRegister(self):
+        '''
+        This method looks for the consumer unit in the database.
+        
+        :return: bool
+            - 0: if the consumer unit doesn't exists in the db
+            - 1: if the consumer unit exists in the db
+        '''
         existsIndicator = None
         
         conn = sql.connect(dbName)
@@ -189,7 +198,12 @@ class UC:
         else:
             return 0
     
-    def insertRegister(self):
+    def insertRegister(self) -> None:
+        '''
+            This method creates a register of the new consumer unit in the db.
+            
+            :return: None
+        '''
         registerExists = self.verifyRegister()
         if registerExists:
             raise Exception('Client already exists in database')
@@ -206,7 +220,23 @@ class UC:
             conn.close()
 
 class monthlyRates:
+    '''
+    This class defines an amount of consumptions in one or more months related to an consumer unit
+    '''
     def __init__(self, ucID, type='consumption', **kwargs):
+        '''
+        Constructor of the class monthly rates.
+
+        :param ucID: the ID of the consumer unit in the database
+        :param type: the type of the amount of data. It accepts:
+            - 'consumption'
+            - 'peakconsumption'
+            - 'offpeakConsumption'
+            - 'demand'
+            - 'peakDemand'
+            - 'offpeakDemand'
+        :param **kwargs: a dictionary that contains the consumptiom related to each month.
+        '''
         self.ucID = ucID
         self.created_at = datetime.datetime.now()
         self.consumption = kwargs
@@ -214,10 +244,10 @@ class monthlyRates:
         typesDict = {
             'consumption':'consumos',
             'peakConsumption':'consumos_ponta',
-            'offpeakConsumprion':'consumos_fora_ponta',
+            'offpeakConsumption':'consumos_fora_ponta',
             'demand':'demandas',
             'peakDemand':'demandas_ponta',
-            'offpeakDemands':'demandas_fora_ponta'
+            'offpeakDemand':'demandas_fora_ponta'
         }
 
         if type in typesDict:
@@ -230,7 +260,14 @@ class monthlyRates:
 
 
     def verifyRegister(self):
-         # verifica se na tabela correspondente ao tipo já existe consumo
+        '''
+            This method verify if this consumer unit already have this type of register in the database
+
+            :return: bool
+                - 0 if this register doesn't exists
+                - 1 if this register already exists
+        '''
+        # verifica se na tabela correspondente ao tipo já existe consumo
         existsRegister = None
         conn = sql.connect(dbName)
         cursor = conn.cursor()
