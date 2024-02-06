@@ -8,20 +8,25 @@ class client:
     This class defines a client for the energy management service.
     Regardless of the proposed solution for reducing energy costs.
     '''
-    def __init__(self, personType, document, name, address, city, state, phone=None, mail=None, lead=None, complement=None) -> None:
+    def __init__(self, personType, document, name, address, city, state, birthday=None, phone=None, mail=None, lead=None, complement=None) -> None:
         '''
         Constructor of the class 'client'.
 
-        :param personType: defines if the client is a natural person or a juridical person
-        :param document: store the number of the clients document. CPF if is a natural person or CNPJ if is a juridic person
-        :param name: the name of the client or the business name (if juridic person)
-        :param address: the street and number of the client. Not necessarily the address of the UC
-        :param city: the city of the client. Not necesssarily the city of the UC
-        :param state: the state of the client. Not necessarily the state of the UC
-        :param phone: the phone number of the client (optional. default is [None])
-        :param mail: the mail address of the client (optional. default is [None])
-        :param lead: if the client is a juridic person, this parameter stores the name of the person who is talking to us in name of the business (optional. default is [None])
-        :param complemet: if the address has a complement, it'll be stored in this parameter {optional. default is [None]}
+        personType: defines if the client is a natural person or a juridical person
+            - 'pf'
+            - 'pj'
+
+        document: store the number of the clients document. CPF if is a natural person or CNPJ if is a juridic person
+
+        name: the name of the client or the business name (if juridic person)
+
+        address: the street and number of the client. Not necessarily the address of the UC
+        city: the city of the client. Not necesssarily the city of the UC
+        state: the state of the client. Not necessarily the state of the UC
+        phone: the phone number of the client (optional. default is [None])
+        mail: the mail address of the client (optional. default is [None])
+        lead: if the client is a juridic person, this parameter stores the name of the person who is talking to us in name of the business (optional. default is [None])
+        complemet: if the address has a complement, it'll be stored in this parameter {optional. default is [None]}
 
         :return: None
         '''
@@ -34,6 +39,7 @@ class client:
         self.state = state
         self.phone = phone
         self.mail = mail
+        self.birthday = birthday
 
         self.created_at = datetime.datetime.now()
         personTypes = ['cpf', 'cnpj']
@@ -106,6 +112,52 @@ class client:
 
             conn.commit()
             conn.close()
+
+    def readClient(self):
+        '''
+        This method reads the register of the client. it reurns all columns
+        '''
+        conn = sql.connect(dbName)
+        cursor = conn.cursor()
+
+        if self.personType == 'pf':
+            documentType = 'cpf'
+        else:
+            documentType = 'cnpj'
+
+        clientRead = cursor.execute(f'''
+            SELECT *
+            FROM clientes
+            WHERE {documentType} = ?;
+        '''
+        ).fetchone(), (self.document)
+
+        conn.close()
+        return clientRead
+    
+    def listUCs(self):
+        '''
+        This method lists all UCs that belongs to this client
+        '''
+        if self.personType == 'pf':
+            documentType = 'cpf'
+        else:
+            documentType = 'cnpj'
+        
+        conn = sql.connect(dbName)
+        cursor = conn.cursor()
+
+        clientID = cursor.execute(f'''
+            SELECT id
+            FROM clientes
+            WHERE {documentType} = ?
+        ''').fetchone(), (self.document,)
+
+        cursor.execute('''
+            SELECT *
+            FROM ucs
+            WHERE client_id = ?
+        ''').fetchall(), (clientID,)
         
 class UC:
     '''

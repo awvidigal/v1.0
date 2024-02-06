@@ -3,3 +3,4 @@ agv.db
 agv.db-journal
 __pycache__
 agv_old.css
+test_agv.py
