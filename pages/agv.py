@@ -135,13 +135,22 @@ class UC:
         :param offpeakDemand: off peak demand for consumer units with the "Azul" modality(optional. default[None])
 
         '''
-        self.utilityCompany = utilityCompany
         self.clientID = clientID
         self.ucNumber = ucNumber
         self.demand = demand
         self.peakDemand = peakDemand
         self.offpeakDemand = offpeakDemand
         self.created_at = datetime.datetime.now()
+
+        self.consumptionTaxes = 0
+        self.peakConsumptionTaxes = 0
+        self.offpeakConsumptionTaxes = 0
+        self.TUSDTaxes = 0
+        self.peakTUSDTaxes = 0
+        self.offpeakTUSDTaxes = 0
+        self.demandTaxes = 0
+        self.peakDemandTaxes = 0
+        self.offpeakDemandTaxes = 0
         
         conn = sql.connect(dbName)
         cursor = conn.cursor()
@@ -159,6 +168,13 @@ class UC:
             FROM modalidades;
             '''
         ).fetchall()
+
+        utilitiesList = cursor.execute(
+            '''
+            SELECT nome
+            FROM concessionarias;
+            '''
+        ).fetchall()
         conn.close()
 
         if subGroup in subGroupsList:
@@ -171,13 +187,105 @@ class UC:
         else:
             raise Exception('Not valid modality')
         
-    def verifyRegister(self):
+        if utilityCompany in utilitiesList:
+            conn = sql.connect(dbName)
+            cursor = conn.cursor
+            
+            self.utilityCompany = cursor.execute(
+                '''
+                SELECT id
+                FROM concessionarias
+                WHERE nome = ?;
+                ''', (utilityCompany,)
+            ).fetchone()
+            conn.close()            
+        else:
+            raise Exception('Not valid utility company')
+        
+        conn = sql.connect(dbName)
+        cursor = conn.cursor()
+
+        self.consumptionTaxes = cursor.execute(
+            '''
+            SELECT te
+            FROM tarifas
+            WHERE concessionaria_id = ? AND subgrupo = ? AND modalidade = ? AND posto = 'Não se aplica';
+            ''', (self.utilityCompany, self.modality)
+        ).fetchone()
+
+        self.peakConsumptionTaxes = cursor.execute(
+            '''
+            SELECT te
+            FROM tarifas
+            WHERE concessionaria_id = ? AND subgrupo = ? AND modalidade = ? AND posto = 'Ponta';
+            ''', (self.utilityCompany, self.modality)
+        ).fetchone()
+        
+        self.offpeakConsumptionTaxes = cursor.execute(
+            '''
+            SELECT te
+            FROM tarifas
+            WHERE concessionaria_id = ? AND subgrupo = ? AND modalidade = ? AND posto = 'Fora ponta';
+            ''', (self.utilityCompany, self.modality)
+        ).fetchone()
+
+        self.TUSDTaxes = cursor.execute(
+            '''
+            SELECT tusd
+            FROM tarifas
+            WHERE concessionaria_id = ? AND subgrupo = ? AND modalidade = ? AND posto = 'Não se aplica' AND unidade = 'R$/MWh';
+            ''', (self.utilityCompany, self.modality)
+        ).fetchone()
+
+        self.peakTUSDTaxes = cursor.execute(
+            '''
+            SELECT tusd
+            FROM tarifas
+            WHERE concessionaria_id = ? AND subgrupo = ? AND modalidade = ? AND posto = 'Ponta' AND unidade = 'R$/MWh';
+            ''', (self.utilityCompany, self.modality)
+        ).fetchone()
+
+        self.offpeakTUSDTaxes = cursor.execute(
+            '''
+            SELECT tusd
+            FROM tarifas
+            WHERE concessionaria_id = ? AND subgrupo = ? AND modalidade = ? AND posto = 'Fora ponta' AND unidade = 'R$/MWh';
+            ''', (self.utilityCompany, self.modality)
+        ).fetchone()
+
+        self.demandTaxes = cursor.execute(
+            '''
+            SELECT tusd
+            FROM tarifas
+            WHERE concessionaria_id = ? AND subgrupo = ? AND modalidade = ? AND posto = 'Não se aplica' AND unidade = 'R$/kW';
+            ''', (self.utilityCompany, self.modality)
+        ).fetchone()
+
+        self.peakDemandTaxes = cursor.execute(
+            '''
+            SELECT tusd
+            FROM tarifas
+            WHERE concessionaria_id = ? AND subgrupo = ? AND modalidade = ? AND posto = 'Ponta' AND unidade = 'R$/kW';
+            ''', (self.utilityCompany, self.modality)
+        ).fetchone()
+
+        self.offpeakDemandTaxes = cursor.execute(
+            '''
+            SELECT tusd
+            FROM tarifas
+            WHERE concessionaria_id = ? AND subgrupo = ? AND modalidade = ? AND posto = 'Fora ponta' AND unidade = 'R$/kW';
+            ''', (self.utilityCompany, self.modality)
+        ).fetchone()
+
+        conn.close()
+        
+    def verifyClientRegister(self):
         '''
         This method looks for the consumer unit in the database.
         
         :return: bool
-            - 0: if the consumer unit doesn't exists in the db
-            - 1: if the consumer unit exists in the db
+            - None: if the consumer unit doesn't exists in the db
+            - UC id: if the consumer unit exists in the db
         '''
         existsIndicator = None
         
@@ -186,7 +294,7 @@ class UC:
 
         existsIndicator = cursor.execute(
             '''
-            SELECT *
+            SELECT id
             FROM ucs
             WHERE uc = ?;
             ''', (self.ucNumber)
@@ -194,9 +302,9 @@ class UC:
         conn.close()
 
         if existsIndicator:
-            return 1
+            return existsIndicator
         else:
-            return 0
+            return None
     
     def insertRegister(self) -> None:
         '''
@@ -204,7 +312,7 @@ class UC:
             
             :return: None
         '''
-        registerExists = self.verifyRegister()
+        registerExists = self.verifyClientRegister()
         if registerExists:
             raise Exception('Client already exists in database')
         else:
@@ -218,6 +326,73 @@ class UC:
                 ''', (self.utilityCompany, self.clientID, self.ucNumber, self.subGroup, self.modality, self.demand, self.peakDemand, self.offpeakDemand, self.created_at)
             )
             conn.close()
+
+    def verifyDataRegister(self, dataType) -> bool:
+        '''
+        This method verifies if the consumption/demand data already exists in db
+
+        :param dataType: which type of data the user needs to verify.
+            - 'consumption': looks for consumption data
+            - 'peakConsumption': looks for peak consumption data
+            - 'offpeakConsumption': looks for off peak consumption data
+            - 'demand': looks for demand data
+            - 'peakDemand': looks for peak demand data
+            - 'offpeakDemand': looks for off peak demand data
+        '''
+
+        existsRegister = None
+        
+        dataTypesList = {
+            'consumption':'consumos',
+            'peakConsumption':'consumos_ponta',
+            'offpeakConsumption':'consumos_fora_ponta',
+            'demand':'demandas',
+            'peakDemand':'demandas_ponta',
+            'offpeakDemand':'demandas_fora_ponta'
+        }
+
+        if dataType in dataTypesList.keys():
+            self.dataType = dataTypesList[dataType]
+        else:
+            raise Exception('Not valid type of data')
+        
+        uc_ID = self.verifyClientRegister()
+        
+        if uc_ID:
+            conn = sql.connect(dbName)
+            cursor = conn.cursor()
+
+            existsRegister = cursor.execute(
+                '''
+                SELECT *
+                FROM ?
+                WHERE uc_id = ?;
+                ''', (self.dataType, uc_ID)
+            ).fetchone()
+            conn.close()
+
+        return existsRegister
+
+    def optimizeCosts(self):
+        '''
+        This method optimizes mdoality, subgroup and demand values to maximum reduce of the energy costs
+        
+        :return:
+        '''
+
+        # identifies the anual costs today
+        # verifies if this UC has the consumption records needed
+        ucID = self.verifyClientRegister()
+        
+        
+        conn = sql.connect(dbName)
+        cursor = conn.cursor()
+
+
+        # calculate anual costs
+
+
+
 
 class monthlyRates:
     '''
@@ -284,11 +459,14 @@ class monthlyRates:
         if existsRegister:
             return 1
         else:
-            return 0
+            return 0        
 
-        
+    def insertRegister(self) -> None:
+        '''
+        This method insert new consumption register in the database, or update the register if it already exists
 
-    def insertRegister(self):
+        :return: None
+        '''
         valuesList = [self.type]
         keysList = self.consumption.keys()
         valuesList.append(list(keysList))
@@ -307,7 +485,7 @@ class monthlyRates:
                 UPDATE ?
                 {setClause}
                 WHERE uc_id = ?;
-                ''', valuesList
+                ''', (valuesList,)
             )
             conn.commit()
             conn.close()
