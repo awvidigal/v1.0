@@ -1,5 +1,6 @@
 import datetime
 import sqlite3 as sql
+import pandas as pd
 
 dbName = 'agv.db'
 
@@ -153,17 +154,21 @@ class client:
             WHERE {documentType} = ?
         ''').fetchone(), (self.document,)
 
-        cursor.execute('''
+        allUCs = cursor.execute('''
             SELECT *
             FROM ucs
             WHERE client_id = ?
         ''').fetchall(), (clientID,)
+
+        conn.close()
+        
+        return allUCs
         
 class UC:
     '''
     This class defines a consumption unit
     '''
-    def __init__(self, utilityCompany, clientID, ucNumber, subGroup, modality, demand=None, peakDemand=None, offpeakDemand=None):
+    def __init__(self, utilityCompany, client, ucNumber, subGroup, modality, contractedDemand = None, contractedPeakDemand = None, contractedOffPeakDemand = None, consumption=None, peakConsumption=None, offpeakConsumption=None, demand=None, peakDemand=None, offpeakDemand=None):
         '''
         Constructor of the class UC
 
@@ -171,6 +176,9 @@ class UC:
         :param clientID: the client's id associated to the consumption unit
         :param ucNumber: the number of the consumption unit
         :param subGroup: the subgroup of the consumption unit. It accepts the following values:
+            - 'B1'
+            - 'B2'
+            - 'B3'
             - 'A1'
             - 'A2'
             - 'A3'
@@ -186,13 +194,162 @@ class UC:
         :param peakDemand: peak demand for consumer units with the "Azul" modality(optional. default[None])
         :param offpeakDemand: off peak demand for consumer units with the "Azul" modality(optional. default[None])
 
+        :return: None
         '''
-        self.clientID = clientID
+        self.groupBList = [
+            'B1', 
+            'B2',
+            'B3'
+        ]
+        
         self.ucNumber = ucNumber
         self.demand = demand
         self.peakDemand = peakDemand
         self.offpeakDemand = offpeakDemand
         self.created_at = datetime.datetime.now()
+        self.id = None
+
+        conn = sql.connect(dbName)
+        cursor = conn.cursor()
+
+        self.id = cursor.execute(
+            '''
+            SELECT id
+            FROM ucs
+            WHERE uc = ?;
+            ''', (self.ucNumber, )
+        ).fetchone()
+        
+        conn.close()
+
+
+        if consumption is not None:
+            if isinstance(consumption, dict):
+                self.consumption = consumption
+            else:
+                raise TypeError('consumption must be a dictionary')
+        elif self.id is not None and subGroup in self.groupBList:
+                conn = sql.connect(dbName)
+                cursor = conn.cursor()
+
+                self.consumption = cursor.execute(
+                    '''
+                    SELECT *
+                    FROM consumos
+                    WHERE uc_id = ?;
+                    ''', (self.id, )
+                ).fetchone()
+                conn.close()
+
+                self.consumption = list(self.consumption)
+            
+        if peakConsumption is not None:
+            if isinstance(peakConsumption, dict):
+                self.peakConsumption = peakConsumption
+            else:
+                raise TypeError('peakConsumption must be a dictionary')
+            
+        elif self.id is not None and subGroup not in self.groupBList:
+            conn = sql.connect(dbName)
+            cursor = conn.cursor()
+
+            self.peakConsumption = cursor.execute(
+                '''
+                SELECT *
+                FROM consumos_ponta
+                WHERE uc_id = ?;
+                ''', (self.id, )
+            ).fetchone()
+            conn.close()
+
+            self.peakConsumption = list(self.peakConsumption)            
+
+        if offpeakConsumption is not None:
+            if isinstance(offpeakConsumption, dict):
+                self.offpeakConsumption = offpeakConsumption
+            else:
+                raise TypeError('offpeakConsumption must be a dictionary')
+        elif self.id is not None and subGroup not in self.groupBList:
+            conn = sql.connect(dbName)
+            cursor = conn.cursor()
+
+            self.offpeakConsumption = cursor.execute(
+                '''
+                SELECT *
+                FROM consumos_fora_ponta
+                WHERE id = ?;
+                ''', (self.id, )
+            ).fetchone()
+            conn.close()
+
+            self.offpeakConsumption = list(self.offpeakConsumption)
+
+        if demand is not None:
+            if isinstance(demand, dict):
+                self.demand = demand
+            else:
+                raise TypeError('demand must be a dictionary')
+        elif self.id is not None and subGroup not in self.groupBList:
+            conn = sql.connect(dbName)
+            cursor = conn.cursor()
+
+            self.demand = cursor.execute(
+                '''
+                SELECT *
+                FROM demandas
+                WHERE id = ?;
+                ''', (self.id, )
+            ).fetchone()
+            conn.close()
+
+            self.demand = list(self.demand)
+
+
+        if peakDemand is not None:
+            if isinstance(peakDemand, dict):
+                self.peakDemand = peakDemand
+            else:
+                raise TypeError('demand must be a dictionary')
+        elif self.id is not None and subGroup not in self.groupBList:
+            conn = sql.connect(dbName)
+            cursor = conn.cursor()
+
+            self.peakDemand = cursor.execute(
+                '''
+                SELECT *
+                FROM demandas_ponta
+                WHERE id = ?;
+                ''', (self.id, )
+            ).fetchone()
+            conn.close()
+
+            self.peakDemand = list(self.peakDemand)
+
+        if offpeakDemand is not None:
+            if isinstance(offpeakDemand, dict):
+                self.offpeakDemand = offpeakDemand
+            else:
+                raise TypeError('demand must be a dictionary')
+        elif self.id is not None and subGroup not in self.groupBList:
+            conn = sql.connect(dbName)
+            cursor = conn.cursor()
+
+            self.offpeakDemand = cursor.execute(
+                '''
+                SELECT *
+                FROM demandas_fora_ponta
+                WHERE id = ?;
+                ''', (self.id, )
+            ).fetchone()
+            conn.close()
+
+            self.offpeakDemand = list(self.offpeakDemand)
+
+
+
+
+
+
 
         self.consumptionTaxes = 0
         self.peakConsumptionTaxes = 0
@@ -227,6 +384,14 @@ class UC:
             FROM concessionarias;
             '''
         ).fetchall()
+
+        self.clientID = cursor.execute(
+            '''
+            SELECT id
+            FROM clientes
+            WHERE nome = ?;
+            ''', (client, )
+        ).fetchone()
         conn.close()
 
         if subGroup in subGroupsList:
@@ -257,81 +422,84 @@ class UC:
         conn = sql.connect(dbName)
         cursor = conn.cursor()
 
-        self.consumptionTaxes = cursor.execute(
-            '''
-            SELECT te
-            FROM tarifas
-            WHERE concessionaria_id = ? AND subgrupo = ? AND modalidade = ? AND posto = 'Não se aplica';
-            ''', (self.utilityCompany, self.modality)
-        ).fetchone()
+        if subGroup in groupBList:
+            self.consumptionTaxes = cursor.execute(
+                '''
+                SELECT te
+                FROM tarifas
+                WHERE concessionaria_id = ? AND subgrupo = ? AND modalidade = ? AND posto = 'Não se aplica';
+                ''', (self.utilityCompany, self.modality)
+            ).fetchone()
 
-        self.peakConsumptionTaxes = cursor.execute(
-            '''
-            SELECT te
-            FROM tarifas
-            WHERE concessionaria_id = ? AND subgrupo = ? AND modalidade = ? AND posto = 'Ponta';
-            ''', (self.utilityCompany, self.modality)
-        ).fetchone()
+            self.TUSDTaxes = cursor.execute(
+                '''
+                SELECT tusd
+                FROM tarifas
+                WHERE concessionaria_id = ? AND subgrupo = ? AND modalidade = ? AND posto = 'Não se aplica' AND unidade = 'R$/MWh';
+                ''', (self.utilityCompany, self.modality)
+            ).fetchone()
+
+        if subGroup not in groupBList:
+            self.peakConsumptionTaxes = cursor.execute(
+                '''
+                SELECT te
+                FROM tarifas
+                WHERE concessionaria_id = ? AND subgrupo = ? AND modalidade = ? AND posto = 'Ponta';
+                ''', (self.utilityCompany, self.modality)
+            ).fetchone()
         
-        self.offpeakConsumptionTaxes = cursor.execute(
-            '''
-            SELECT te
-            FROM tarifas
-            WHERE concessionaria_id = ? AND subgrupo = ? AND modalidade = ? AND posto = 'Fora ponta';
-            ''', (self.utilityCompany, self.modality)
-        ).fetchone()
+            self.offpeakConsumptionTaxes = cursor.execute(
+                '''
+                SELECT te
+                FROM tarifas
+                WHERE concessionaria_id = ? AND subgrupo = ? AND modalidade = ? AND posto = 'Fora ponta';
+                ''', (self.utilityCompany, self.modality)
+            ).fetchone()
 
-        self.TUSDTaxes = cursor.execute(
-            '''
-            SELECT tusd
-            FROM tarifas
-            WHERE concessionaria_id = ? AND subgrupo = ? AND modalidade = ? AND posto = 'Não se aplica' AND unidade = 'R$/MWh';
-            ''', (self.utilityCompany, self.modality)
-        ).fetchone()
+            self.peakTUSDTaxes = cursor.execute(
+                '''
+                SELECT tusd
+                FROM tarifas
+                WHERE concessionaria_id = ? AND subgrupo = ? AND modalidade = ? AND posto = 'Ponta' AND unidade = 'R$/MWh';
+                ''', (self.utilityCompany, self.modality)
+            ).fetchone()
 
-        self.peakTUSDTaxes = cursor.execute(
-            '''
-            SELECT tusd
-            FROM tarifas
-            WHERE concessionaria_id = ? AND subgrupo = ? AND modalidade = ? AND posto = 'Ponta' AND unidade = 'R$/MWh';
-            ''', (self.utilityCompany, self.modality)
-        ).fetchone()
+            self.offpeakTUSDTaxes = cursor.execute(
+                '''
+                SELECT tusd
+                FROM tarifas
+                WHERE concessionaria_id = ? AND subgrupo = ? AND modalidade = ? AND posto = 'Fora ponta' AND unidade = 'R$/MWh';
+                ''', (self.utilityCompany, self.modality)
+            ).fetchone()
 
-        self.offpeakTUSDTaxes = cursor.execute(
-            '''
-            SELECT tusd
-            FROM tarifas
-            WHERE concessionaria_id = ? AND subgrupo = ? AND modalidade = ? AND posto = 'Fora ponta' AND unidade = 'R$/MWh';
-            ''', (self.utilityCompany, self.modality)
-        ).fetchone()
+            if modality is not 'AZUL':
+                self.demandTaxes = cursor.execute(
+                    '''
+                    SELECT tusd
+                    FROM tarifas
+                    WHERE concessionaria_id = ? AND subgrupo = ? AND modalidade = ? AND posto = 'Não se aplica' AND unidade = 'R$/kW';
+                    ''', (self.utilityCompany, self.modality)
+                ).fetchone()
 
-        self.demandTaxes = cursor.execute(
-            '''
-            SELECT tusd
-            FROM tarifas
-            WHERE concessionaria_id = ? AND subgrupo = ? AND modalidade = ? AND posto = 'Não se aplica' AND unidade = 'R$/kW';
-            ''', (self.utilityCompany, self.modality)
-        ).fetchone()
+            else:
+                self.peakDemandTaxes = cursor.execute(
+                    '''
+                    SELECT tusd
+                    FROM tarifas
+                    WHERE concessionaria_id = ? AND subgrupo = ? AND modalidade = ? AND posto = 'Ponta' AND unidade = 'R$/kW';
+                    ''', (self.utilityCompany, self.modality)
+                ).fetchone()
 
-        self.peakDemandTaxes = cursor.execute(
-            '''
-            SELECT tusd
-            FROM tarifas
-            WHERE concessionaria_id = ? AND subgrupo = ? AND modalidade = ? AND posto = 'Ponta' AND unidade = 'R$/kW';
-            ''', (self.utilityCompany, self.modality)
-        ).fetchone()
-
-        self.offpeakDemandTaxes = cursor.execute(
-            '''
-            SELECT tusd
-            FROM tarifas
-            WHERE concessionaria_id = ? AND subgrupo = ? AND modalidade = ? AND posto = 'Fora ponta' AND unidade = 'R$/kW';
-            ''', (self.utilityCompany, self.modality)
-        ).fetchone()
-
+                self.offpeakDemandTaxes = cursor.execute(
+                    '''
+                    SELECT tusd
+                    FROM tarifas
+                    WHERE concessionaria_id = ? AND subgrupo = ? AND modalidade = ? AND posto = 'Fora ponta' AND unidade = 'R$/kW';
+                    ''', (self.utilityCompany, self.modality)
+                ).fetchone()
         conn.close()
         
-    def verifyClientRegister(self):
+    def verifyUCRegister(self):
         '''
         This method looks for the consumer unit in the database.
         
@@ -353,10 +521,8 @@ class UC:
         ).fetchone()
         conn.close()
 
-        if existsIndicator:
-            return existsIndicator
-        else:
-            return None
+        return existsIndicator
+       
     
     def insertRegister(self) -> None:
         '''
@@ -364,7 +530,7 @@ class UC:
             
             :return: None
         '''
-        registerExists = self.verifyClientRegister()
+        registerExists = self.verifyUCRegister()
         if registerExists:
             raise Exception('Client already exists in database')
         else:
@@ -379,7 +545,7 @@ class UC:
             )
             conn.close()
 
-    def verifyDataRegister(self, dataType) -> bool:
+    def readDataRegister(self, dataType):
         '''
         This method verifies if the consumption/demand data already exists in db
 
@@ -392,7 +558,7 @@ class UC:
             - 'offpeakDemand': looks for off peak demand data
         '''
 
-        existsRegister = None
+        register = None
         
         dataTypesList = {
             'consumption':'consumos',
@@ -414,16 +580,82 @@ class UC:
             conn = sql.connect(dbName)
             cursor = conn.cursor()
 
-            existsRegister = cursor.execute(
-                '''
+            register = cursor.execute(
+                f'''
                 SELECT *
-                FROM ?
+                FROM {self.dataType}
                 WHERE uc_id = ?;
-                ''', (self.dataType, uc_ID)
+                ''', (uc_ID,)
             ).fetchone()
             conn.close()
 
-        return existsRegister
+        return register
+    
+    def insertDataRegister(self, datatype):
+        dataTypesList = {
+            'consumption':'consumos',
+            'peakConsumption':'consumos_ponta',
+            'offpeakConsumption':'consumos_fora_ponta',
+            'demand':'demandas',
+            'peakDemand':'demandas_ponta',
+            'offpeakDemand':'demandas_fora_ponta'
+        }
+
+        if datatype in dataTypesList.keys():
+            self.dataType = datatype
+        else:
+            raise Exception('dataType not recognized')
+        
+        if datatype is 'consumption':
+            values = self.consumption
+        elif datatype is 'peakConsumption':
+            values = self.peakConsumption
+        elif datatype is 'offpeakConsumption':
+            values = self.offpeakConsumption
+        elif datatype is 'demand':
+            values = self.demand
+        elif datatype is 'peakDemand':
+            values = self.peakDemand
+        elif datatype is 'offpeakDemand':
+            values = self.offpeakDemand
+        
+        conn = sql.connect(dbName)
+        cursor = conn.cursor()
+
+        cursor.execute(
+            f'''
+            INSERT INTO {dataTypesList[self.dataType]} (jan, feb, mar, apr, mai, jun, jul, aug, sep, oct, nov, dec)
+            VALUES (?,?,?,?,?,?,?,?,?,?,?,?);
+            ''', (values, )
+        )
+
+        conn.commit()
+        conn.close()
+
+    def calculateAnualCosts(self):
+        self.anualConsumption = None
+        self.anualPeakConsumption = None
+        self.anualOffpeakConsumption = None
+        self.anualCosts = None
+
+        if self.subGroup in self.groupBList:
+            self.anualConsumption = pd.Series(self.readDataRegister('consumption'))
+            self.anualConsumption = self.anualConsumption.sum()
+
+        else:
+            self.anualPeakConsumption = pd.Series(self.readDataRegister('peakConsumption'))
+            self.anualOffpeakConsumption = pd.Series(self.readDataRegister('offpeakConsumption'))
+
+            self.anualPeakConsumption = self.anualPeakConsumption.sum()
+            self.anualOffpeakConsumption = self.anualOffpeakConsumption.sum()
+
+
+
+
+        pass
+
+    def calculateMeanCosts(self):
+        pass
 
     def optimizeCosts(self):
         '''
@@ -431,17 +663,7 @@ class UC:
         
         :return:
         '''
-
-        # identifies the anual costs today
-        # verifies if this UC has the consumption records needed
-        ucID = self.verifyClientRegister()
-        
-        
-        conn = sql.connect(dbName)
-        cursor = conn.cursor()
-
-
-        # calculate anual costs
+        pass
 
 
 
