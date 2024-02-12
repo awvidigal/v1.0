@@ -345,12 +345,6 @@ class UC:
 
             self.offpeakDemand = list(self.offpeakDemand)
 
-
-
-
-
-
-
         self.consumptionTaxes = 0
         self.peakConsumptionTaxes = 0
         self.offpeakConsumptionTaxes = 0
@@ -531,6 +525,7 @@ class UC:
             :return: None
         '''
         registerExists = self.verifyUCRegister()
+       
         if registerExists:
             raise Exception('Client already exists in database')
         else:
@@ -541,7 +536,7 @@ class UC:
                 '''
                 INSERT INTO ucs (concessionaria, cliente_id, uc, subgrupo, modalidade, demanda_contratada, demanda_contratada_ponta, demanda_contratada_fora_ponta, created_at)
                 VALUES (?,?,?,?,?,?,?,?,?);
-                ''', (self.utilityCompany, self.clientID, self.ucNumber, self.subGroup, self.modality, self.demand, self.peakDemand, self.offpeakDemand, self.created_at)
+                ''', (self.utilityCompany, self.clientID, self.ucNumber, self.subGroup, self.modality, self.contractedDemand, self.contractedPeakDemand, self.contractedOffPeakDemand, self.created_at)
             )
             conn.close()
 
